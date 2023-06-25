@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,6 +16,21 @@ namespace LayoutCustomization
 {
     public partial class mainForm : Form
     {
+        public Color listBackcolor = Color.FromArgb(255, 28, 28, 28);
+        public Color listSelectedcolor = Color.FromArgb(255, 40, 40, 40);
+        public Color listHovercolor = Color.FromArgb(255, 35, 35, 35);
+
+        public Color borderColor = Color.FromArgb(255, 100, 100, 100);
+        public Color borderColorActive = Color.DodgerBlue;
+        public bool isLoaded = false;
+
+        List<Label> regLabels = new List<Label>();
+        List<Label> v4Labels = new List<Label>();
+        List<Label> v2Labels = new List<Label>();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
         public string currentDir = Environment.CurrentDirectory;
         public string layoutConfig;
 
@@ -99,6 +115,48 @@ namespace LayoutCustomization
             }
 
             b_placeholder.Select();
+        }
+
+        public async Task listTracks(string[] paths)
+        {
+            await Task.Run(async () =>
+            {
+                foreach (string path in paths)
+                {
+                    DirectoryInfo regInfo = new DirectoryInfo(path);
+
+                    FileInfo[] regFiles = await Task.Run(() => regInfo.GetFiles().OrderByDescending(p => p.CreationTimeUtc).ToArray());
+
+                    for (int i = 0; regFiles.Length > i; i++)
+                    {
+                        Label lbl = new Label();
+                        lbl.Text = Path.GetFileName(regFiles[i].FullName);
+                        lbl.AutoSize = false;
+                        lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
+                        lbl.TextAlign = ContentAlignment.MiddleLeft;
+                        lbl.Size = new Size(regPanel.Size.Width - 4, 25);
+                        lbl.Location = new Point(1, 1 + (i * 28));
+                        lbl.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+                        lbl.BackColor = listBackcolor;
+                        lbl.ForeColor = Color.LightGray;
+                        lbl.Margin = new Padding(1, 1, 1, 1);
+                        lbl.Cursor = Cursors.Hand;
+                        lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
+                        lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
+                        lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
+                        lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
+                        lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
+
+                        regLabels.Add(lbl);
+                        /*
+                        regPanel.Invoke((MethodInvoker)(() =>
+                        {
+                            regPanel.Controls.Add(lbl);
+                        }));
+                        */
+                    }
+                }
+            });
         }
 
     }
