@@ -36,7 +36,7 @@
             this.b_placeholder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.b_placeholder.AutoSize = true;
             this.b_placeholder.Font = new System.Drawing.Font("Bahnschrift Light", 5F);
-            this.b_placeholder.Location = new System.Drawing.Point(12, 584);
+            this.b_placeholder.Location = new System.Drawing.Point(12, 559);
             this.b_placeholder.Name = "b_placeholder";
             this.b_placeholder.Size = new System.Drawing.Size(42, 8);
             this.b_placeholder.TabIndex = 0;
@@ -48,7 +48,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(28)))), ((int)(((byte)(28)))));
-            this.ClientSize = new System.Drawing.Size(665, 601);
+            this.ClientSize = new System.Drawing.Size(780, 576);
             this.Controls.Add(this.b_placeholder);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Bahnschrift Light", 10F);

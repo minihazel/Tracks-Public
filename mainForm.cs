@@ -1,7 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -44,6 +46,7 @@ namespace LayoutCustomization
             layoutConfig = Path.Combine(currentDir, "layout.json");
             if (File.Exists(layoutConfig))
             {
+                this.Size = new Size(796, 615);
                 drawLayout();
             }
             else
@@ -56,6 +59,8 @@ namespace LayoutCustomization
 
         public async void drawLayout()
         {
+            List<Label> items = new List<Label>();
+
             int fullWidth = 0;
             int fullHeight = 0;
             int fullLocX = 0;
@@ -117,7 +122,7 @@ namespace LayoutCustomization
             if (lastBtn != null)
             {
                 Button settingsBtn = new Button();
-                settingsBtn.Name = "settings_button";
+                settingsBtn.Name = "tab_settings";
                 settingsBtn.Text = "Settings";
                 settingsBtn.Size = new Size(180, 35);
                 settingsBtn.Location = new Point(15, lastBtn.Location.Y + 40);
@@ -129,7 +134,7 @@ namespace LayoutCustomization
                 settingsBtn.Cursor = Cursors.Hand;
 
                 Panel settingsPanel = new Panel();
-                settingsPanel.Name = $"settings_panel";
+                settingsPanel.Name = $"settings_panel_region";
                 settingsPanel.Size = new Size(fullWidth, fullHeight);
                 settingsPanel.BorderStyle = BorderStyle.FixedSingle;
                 settingsPanel.Location = new Point(fullLocX, fullLocY);
@@ -142,10 +147,306 @@ namespace LayoutCustomization
 
                 this.Controls.Add(settingsBtn);
                 this.Controls.Add(settingsPanel);
+
+                fillSettingsTab();
             }
 
-            // await listTracks();
+            listTracks();
             selectFirstTab();
+        }
+
+        private void fillSettingsTab()
+        {
+            /*
+             *   Filling the settings page;
+             *   
+             *   - Add combobox to hold the names of all the tabs
+             *   - Add textbox to rename the selected tab
+             *   - Add button to add new tab/delete selected tab
+            */
+
+            Panel settingsPanel = this.Controls.Find("settings_panel_region", false).FirstOrDefault() as Panel;
+
+            ComboBox tabsBox = new ComboBox();
+            tabsBox.Name = "settings_tabsBox";
+            tabsBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            tabsBox.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+            tabsBox.Size = new Size(230, 35);
+            tabsBox.Location = new Point(15, 15);
+            tabsBox.Visible = true;
+            tabsBox.SelectedIndexChanged += new EventHandler(tabsBox_SelectedIndexChanged);
+            tabsBox.Cursor = Cursors.Hand;
+
+            // Settings
+
+            Label textBarTextTitle = new Label();
+            textBarTextTitle.Name = "settings_textBarTextTitle";
+            textBarTextTitle.Text = "Tab display text";
+            textBarTextTitle.AutoSize = true;
+            textBarTextTitle.Size = new Size(180, 35);
+            textBarTextTitle.Location = new Point(10, 55);
+            textBarTextTitle.Visible = true;
+            textBarTextTitle.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
+            textBarTextTitle.ForeColor = Color.LightGray;
+            textBarTextTitle.BackColor = listBackcolor;
+
+            TextBox textBarText = new TextBox();
+            textBarText.Name = "settings_textBarText";
+            textBarText.BorderStyle = BorderStyle.FixedSingle;
+            textBarText.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+            textBarText.Size = new Size(230, 35);
+            textBarText.Location = new Point(15, 75);
+            textBarText.Visible = true;
+            textBarText.KeyDown += new KeyEventHandler(textBar_KeyDown);
+            textBarText.ForeColor = Color.LightGray;
+            textBarText.BackColor = listBackcolor;
+
+
+            Label textBarNameTitle = new Label();
+            textBarNameTitle.Name = "settings_textBarNameTitle";
+            textBarNameTitle.Text = "Tab ID";
+            textBarNameTitle.AutoSize = true;
+            textBarNameTitle.Size = new Size(180, 35);
+            textBarNameTitle.Location = new Point(10, 110);
+            textBarNameTitle.Visible = true;
+            textBarNameTitle.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
+            textBarNameTitle.ForeColor = Color.LightGray;
+            textBarNameTitle.BackColor = listBackcolor;
+
+            TextBox textBarName = new TextBox();
+            textBarName.Name = "settings_textBarName";
+            textBarName.BorderStyle = BorderStyle.FixedSingle;
+            textBarName.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+            textBarName.Size = new Size(230, 35);
+            textBarName.Location = new Point(15, 130);
+            textBarName.Visible = true;
+            textBarName.KeyDown += new KeyEventHandler(textBar_KeyDown);
+            textBarName.ForeColor = Color.LightGray;
+            textBarName.BackColor = listBackcolor;
+
+
+            Label textBarPathTitle = new Label();
+            textBarPathTitle.Name = "settings_textBarPathTitle";
+            textBarPathTitle.Text = "Path to search";
+            textBarPathTitle.AutoSize = true;
+            textBarPathTitle.Size = new Size(180, 35);
+            textBarPathTitle.Location = new Point(10, 165);
+            textBarPathTitle.Visible = true;
+            textBarPathTitle.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
+            textBarPathTitle.ForeColor = Color.LightGray;
+            textBarPathTitle.BackColor = listBackcolor;
+
+            TextBox textBarPath = new TextBox();
+            textBarPath.Name = "settings_textBarPath";
+            textBarPath.BorderStyle = BorderStyle.FixedSingle;
+            textBarPath.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+            textBarPath.Size = new Size(230, 35);
+            textBarPath.Location = new Point(15, 185);
+            textBarPath.Visible = true;
+            textBarPath.KeyDown += new KeyEventHandler(textBar_KeyDown);
+            textBarPath.ForeColor = Color.LightGray;
+            textBarPath.BackColor = listBackcolor;
+
+            // Buttons
+
+            Button confirmBtn = new Button();
+            confirmBtn.Name = "settings_confirmBtn";
+            confirmBtn.Text = "Edit";
+            confirmBtn.Size = new Size(180, 35);
+            confirmBtn.Location = new Point(15, 225);
+            confirmBtn.Visible = true;
+            confirmBtn.MouseDown += new MouseEventHandler(confirmBtn_MouseDown);
+            confirmBtn.FlatAppearance.BorderSize = 1;
+            confirmBtn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+            confirmBtn.FlatStyle = FlatStyle.Flat;
+            confirmBtn.Cursor = Cursors.Hand;
+
+
+            settingsPanel.Controls.Add(tabsBox);
+
+            settingsPanel.Controls.Add(textBarTextTitle);
+            settingsPanel.Controls.Add(textBarText);
+            settingsPanel.Controls.Add(textBarNameTitle);
+            settingsPanel.Controls.Add(textBarName);
+            settingsPanel.Controls.Add(textBarPathTitle);
+            settingsPanel.Controls.Add(textBarPath);
+
+            settingsPanel.Controls.Add(confirmBtn);
+
+            JArray tabsArray = readTabs() as JArray;
+            foreach (JObject item in tabsArray)
+            {
+                tabsBox.Items.Add(item["Text"]);
+            }
+        }
+
+        private void tabsBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            System.Windows.Forms.ComboBox tabsBox = (System.Windows.Forms.ComboBox)sender;
+
+            if (tabsBox != null)
+            {
+                if (tabsBox.SelectedIndex > -1)
+                {
+                    JArray tabsArray = readTabs() as JArray;
+                    JToken selectedItem = tabsArray[tabsBox.SelectedIndex];
+
+                    TextBox textBarText = tabsBox.Parent.Controls.Find("settings_textBarText", false).FirstOrDefault() as TextBox;
+                    TextBox textBarName = tabsBox.Parent.Controls.Find("settings_textBarName", false).FirstOrDefault() as TextBox;
+                    TextBox textBarPath = tabsBox.Parent.Controls.Find("settings_textBarPath", false).FirstOrDefault() as TextBox;
+
+                    textBarText.Text = selectedItem["Text"].ToString();
+                    textBarName.Text = selectedItem["Name"].ToString();
+                    textBarPath.Text = selectedItem["Path"].ToString();
+                }
+            }
+        }
+
+        private void textBar_KeyDown(object sender, KeyEventArgs e)
+        {
+            System.Windows.Forms.TextBox textBar = (System.Windows.Forms.TextBox)sender;
+
+            if (textBar != null)
+            {
+                Button confirmBtn = textBar.Parent.Controls.Find("settings_confirmBtn", false).FirstOrDefault() as Button;
+
+                TextBox textBarText = textBar.Parent.Controls.Find("settings_textBarText", false).FirstOrDefault() as TextBox;
+                TextBox textBarName = textBar.Parent.Controls.Find("settings_textBarName", false).FirstOrDefault() as TextBox;
+                TextBox textBarPath = textBar.Parent.Controls.Find("settings_textBarPath", false).FirstOrDefault() as TextBox;
+
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    e.Handled = true;
+
+                    if (textBar.Name == "settings_textBarText")
+                    {
+                        textBarName.Select();
+                    }
+                    else if (textBar.Name == "settings_textBarName")
+                    {
+                        textBarPath.Select();
+                    }
+                    else if (textBar.Name == "settings_textBarPath")
+                    {
+                        confirmBtn.Select();
+                    }
+                }
+            }
+        }
+
+        private void confirmBtn_MouseDown(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Button confirmBtn = (System.Windows.Forms.Button)sender;
+
+            string jsonContent = File.ReadAllText(layoutConfig);
+            JObject jsonObject = JObject.Parse(jsonContent);
+            JArray tabsArray = (JArray)jsonObject["Tabs"];
+
+            ComboBox tabsBox = confirmBtn.Parent.Controls.Find("settings_tabsBox", false).FirstOrDefault() as ComboBox;
+            TextBox textBarText = confirmBtn.Parent.Controls.Find("settings_textBarText", false).FirstOrDefault() as TextBox;
+            TextBox textBarName = confirmBtn.Parent.Controls.Find("settings_textBarName", false).FirstOrDefault() as TextBox;
+            TextBox textBarPath = confirmBtn.Parent.Controls.Find("settings_textBarPath", false).FirstOrDefault() as TextBox;
+
+            Label textBarNameTitle = confirmBtn.Parent.Controls.Find("settings_textBarNameTitle", false).FirstOrDefault() as Label;
+
+            if (confirmBtn != null)
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    switch (confirmBtn.Text.ToLower())
+                    {
+                        case "edit":
+                            confirmBtn.Text = "Remove";
+                            textBarNameTitle.Text = "Tab ID";
+                            break;
+                        case "remove":
+                            confirmBtn.Text = "Add";
+                            textBarNameTitle.Text = "Tab ID";
+                            break;
+                        case "add":
+                            confirmBtn.Text = "Clear fields";
+                            textBarNameTitle.Text = "Tab ID";
+                            break;
+                        case "clear fields":
+                            confirmBtn.Text = "Edit";
+                            textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
+                            break;
+                    }
+                }
+                else if (e.Button == MouseButtons.Left)
+                {
+                    switch (confirmBtn.Text.ToLower())
+                    {
+                        case "edit":
+
+
+                            break;
+
+                        case "remove":
+
+                            foreach (JObject tab in tabsArray)
+                            {
+                                string tabText = tab["Text"].ToString();
+                                string tabName = tab["Name"].ToString();
+                                string tabPath = tab["Path"].ToString();
+
+                                string _text = textBarText.Text;
+                                string _name = textBarName.Text;
+                                string _path = textBarPath.Text;
+
+                                if (tabText == _text &&
+                                    tabName == _name &&
+                                    tabPath == _path)
+                                {
+                                    tabsArray.Remove(tab);
+                                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                    File.WriteAllText(layoutConfig, output);
+                                    break;
+                                }
+                            }
+
+                            break;
+
+                        case "add":
+
+                            foreach (JObject tab in tabsArray)
+                            {
+                                string tabName = tab["Name"].ToString();
+                                string _name = textBarName.Text;
+
+                                bool detected = tabsArray.Any(obj => obj["Name"].ToString() == _name);
+                                bool doesNotContain = !detected;
+
+                                if (doesNotContain)
+                                {
+                                    JObject newTab = new JObject();
+                                    newTab["Text"] = textBarText.Text;
+                                    newTab["Name"] = textBarName.Text;
+                                    newTab["Path"] = textBarPath.Text;
+
+                                    tabsArray.Add(newTab);
+                                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                    File.WriteAllText(layoutConfig, output);
+                                    break;
+                                }
+                            }
+
+                            break;
+
+                        case "clear fields":
+                            textBarText.Clear();
+                            textBarName.Clear();
+                            textBarPath.Clear();
+
+                            tabsBox.Text = "";
+
+                            textBarText.Select();
+
+                            break;
+                    }
+                }
+            }
         }
 
         private void selectFirstTab()
@@ -239,11 +540,20 @@ namespace LayoutCustomization
                 btn.ForeColor = Color.DodgerBlue;
                 btn.FlatAppearance.BorderColor = Color.DodgerBlue;
 
-                Dictionary<string, Panel> buttonPanelMap = ReadLayoutTabs(layoutConfig);
-                if (buttonPanelMap.TryGetValue(btn.Name, out Panel targetPanel))
+                if (btn.Text == "Settings" && btn.Name.ToLower() == "tab_settings")
                 {
-                    targetPanel.BringToFront();
+                    Panel settingsPanel = this.Controls.Find("settings_panel_region", false).FirstOrDefault() as Panel;
+                    settingsPanel.BringToFront();
                 }
+                else
+                {
+                    Dictionary<string, Panel> buttonPanelMap = ReadLayoutTabs(layoutConfig);
+                    if (buttonPanelMap.TryGetValue(btn.Name, out Panel targetPanel))
+                    {
+                        targetPanel.BringToFront();
+                    }
+                }
+
             }
 
             b_placeholder.Select();
@@ -302,20 +612,65 @@ namespace LayoutCustomization
 
         public async Task listTracks()
         {
+            List<Label> tracks = new List<Label>();
+            Panel foundPanel= null;
+
             string buttonPrefix = "tab_";
             string panelSuffix = "_region";
             Dictionary<Button, (string Name, string Text, string Path, Panel _panel)> buttonProperties =
                 FindButtonProperties(layoutConfig, buttonPrefix, panelSuffix);
 
-            foreach (var kvp in buttonProperties)
+            foreach (var tabItem in buttonProperties)
             {
-                Button btn = kvp.Key;
-                string name = kvp.Value.Name;
-                string text = kvp.Value.Text;
-                string path = kvp.Value.Path;
-                Panel panel = kvp.Value._panel;
+                Button btn = tabItem.Key;
+                string name = tabItem.Value.Name;
+                string text = tabItem.Value.Text;
+                string path = tabItem.Value.Path;
+                Panel panel = tabItem.Value._panel;
+
+                foundPanel = panel;
 
                 string[] acceptedExtensions = { ".mp3", ".wav", ".mp4" };
+                DirectoryInfo pathInfo = new DirectoryInfo(path);
+                FileInfo[] pathFiles = pathInfo.GetFiles()
+                    .Where(file => acceptedExtensions.Contains(file.Extension.ToLower()))
+                    .OrderByDescending(p => p.CreationTimeUtc)
+                    .ToArray();
+
+                int index = 0;
+
+                foreach (var file in pathFiles)
+                {
+                    Label lbl = new Label();
+                    lbl.Text = Path.GetFileName(pathFiles[index].FullName);
+                    lbl.AutoSize = false;
+                    lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
+                    lbl.TextAlign = ContentAlignment.MiddleLeft;
+                    lbl.Size = new Size(panel.Size.Width - 4, 25);
+                    lbl.Location = new Point(1, 1 + (index * 28));
+                    lbl.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
+                    lbl.BackColor = listBackcolor;
+                    lbl.ForeColor = Color.LightGray;
+                    lbl.Margin = new Padding(1, 1, 1, 1);
+                    lbl.Cursor = Cursors.Hand;
+                    lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
+                    lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
+                    lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
+                    lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
+                    lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
+                    tracks.Add(lbl);
+
+                    index++;
+                }
+
+                Control[] allTracks = tracks.ToArray();
+                foundPanel.Controls.AddRange(allTracks);
+
+                tracks.Clear();
+
+                /*
+                string[] acceptedExtensions = { ".mp3", ".wav", ".mp4" };
+
                 foreach (string extension in acceptedExtensions)
                 {
                     DirectoryInfo pathInfo = new DirectoryInfo(path);
@@ -344,10 +699,15 @@ namespace LayoutCustomization
                         lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
                         lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
 
-                        panel.Controls.Add(lbl);
+                        await Task.Run(() =>
+                        {
+                            panel.Controls.Add(lbl);
+                        });
                     }
                 }
+                */
             }
+
         }
 
         private void FindButtonAndPerformOperation(JArray tabsArray, Color borderColor, Button selectedButton, string selectedTrack)
