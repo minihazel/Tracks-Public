@@ -30,6 +30,8 @@ namespace LayoutCustomization
         List<Label> v4Labels = new List<Label>();
         List<Label> v2Labels = new List<Label>();
 
+        splashscreen Splashscreen = new splashscreen();
+
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
@@ -48,6 +50,7 @@ namespace LayoutCustomization
             {
                 this.Size = new Size(796, 615);
                 drawLayout();
+
             }
             else
             {
@@ -123,7 +126,7 @@ namespace LayoutCustomization
             {
                 Button settingsBtn = new Button();
                 settingsBtn.Name = "tab_settings";
-                settingsBtn.Text = "Settings";
+                settingsBtn.Text = "SETTINGS";
                 settingsBtn.Size = new Size(180, 35);
                 settingsBtn.Location = new Point(15, lastBtn.Location.Y + 40);
                 settingsBtn.Visible = true;
@@ -261,6 +264,18 @@ namespace LayoutCustomization
             confirmBtn.FlatStyle = FlatStyle.Flat;
             confirmBtn.Cursor = Cursors.Hand;
 
+            Button openConfig = new Button();
+            openConfig.Name = "settings_openConfig";
+            openConfig.Text = "Open configuration file";
+            openConfig.Size = new Size(180, 35);
+            openConfig.Location = new Point(confirmBtn.Size.Width + 25, confirmBtn.Location.Y);
+            openConfig.Visible = true;
+            openConfig.MouseDown += new MouseEventHandler(openConfig_MouseDown);
+            openConfig.FlatAppearance.BorderSize = 1;
+            openConfig.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+            openConfig.FlatStyle = FlatStyle.Flat;
+            openConfig.Cursor = Cursors.Hand;
+
 
             settingsPanel.Controls.Add(tabsBox);
 
@@ -272,6 +287,10 @@ namespace LayoutCustomization
             settingsPanel.Controls.Add(textBarPath);
 
             settingsPanel.Controls.Add(confirmBtn);
+            settingsPanel.Controls.Add(openConfig);
+
+            textBarName.Enabled = false;
+            textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
 
             JArray tabsArray = readTabs() as JArray;
             foreach (JObject item in tabsArray)
@@ -335,6 +354,21 @@ namespace LayoutCustomization
             }
         }
 
+        private void openConfig_MouseDown(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Button openConfig = (System.Windows.Forms.Button)sender;
+
+            if (openConfig != null)
+            {
+                bool layoutExists = File.Exists(layoutConfig);
+
+                if (layoutExists)
+                    Process.Start(layoutConfig);
+            }
+
+            b_placeholder.Select();
+        }
+
         private void confirmBtn_MouseDown(object sender, MouseEventArgs e)
         {
             System.Windows.Forms.Button confirmBtn = (System.Windows.Forms.Button)sender;
@@ -359,91 +393,142 @@ namespace LayoutCustomization
                         case "edit":
                             confirmBtn.Text = "Remove";
                             textBarNameTitle.Text = "Tab ID";
+                            textBarName.Enabled = true;
+
                             break;
                         case "remove":
                             confirmBtn.Text = "Add";
                             textBarNameTitle.Text = "Tab ID";
+
                             break;
                         case "add":
                             confirmBtn.Text = "Clear fields";
                             textBarNameTitle.Text = "Tab ID";
+
                             break;
                         case "clear fields":
                             confirmBtn.Text = "Edit";
                             textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
+                            textBarName.Enabled = false;
+
                             break;
                     }
                 }
                 else if (e.Button == MouseButtons.Left)
                 {
-                    switch (confirmBtn.Text.ToLower())
+                    if (textBarText.Text == "" && textBarName.Text == "" && textBarPath.Text == "")
                     {
-                        case "edit":
+                        MessageBox.Show("Please select an item to edit to remove.", this.Text, MessageBoxButtons.OK);
 
+                    }
+                    else
+                    {
+                        switch (confirmBtn.Text.ToLower())
+                        {
+                            case "edit":
+                                int selectedIndex = tabsBox.SelectedIndex;
 
-                            break;
-
-                        case "remove":
-
-                            foreach (JObject tab in tabsArray)
-                            {
-                                string tabText = tab["Text"].ToString();
-                                string tabName = tab["Name"].ToString();
-                                string tabPath = tab["Path"].ToString();
-
-                                string _text = textBarText.Text;
-                                string _name = textBarName.Text;
-                                string _path = textBarPath.Text;
-
-                                if (tabText == _text &&
-                                    tabName == _name &&
-                                    tabPath == _path)
+                                if (selectedIndex >= 0 && selectedIndex < tabsArray.Count)
                                 {
-                                    tabsArray.Remove(tab);
-                                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                                    File.WriteAllText(layoutConfig, output);
-                                    break;
+                                    JObject selectedItem = tabsArray[selectedIndex] as JObject;
+
+                                    if (selectedItem != null)
+                                    {
+                                        if (selectedItem["Name"].ToString() == textBarName.Text)
+                                        {
+                                            selectedItem["Text"] = textBarText.Text;
+                                            selectedItem["Path"] = textBarPath.Text;
+                                            string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                            File.WriteAllText(layoutConfig, output);
+                                        }
+                                    }
                                 }
-                            }
 
-                            break;
+                                textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
+                                textBarName.Enabled = false;
 
-                        case "add":
+                                break;
 
-                            foreach (JObject tab in tabsArray)
-                            {
-                                string tabName = tab["Name"].ToString();
-                                string _name = textBarName.Text;
+                            case "remove":
 
-                                bool detected = tabsArray.Any(obj => obj["Name"].ToString() == _name);
-                                bool doesNotContain = !detected;
-
-                                if (doesNotContain)
+                                foreach (JObject tab in tabsArray)
                                 {
-                                    JObject newTab = new JObject();
-                                    newTab["Text"] = textBarText.Text;
-                                    newTab["Name"] = textBarName.Text;
-                                    newTab["Path"] = textBarPath.Text;
+                                    string tabText = tab["Text"].ToString();
+                                    string tabName = tab["Name"].ToString();
+                                    string tabPath = tab["Path"].ToString();
 
-                                    tabsArray.Add(newTab);
-                                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                                    File.WriteAllText(layoutConfig, output);
-                                    break;
+                                    string _text = textBarText.Text;
+                                    string _name = textBarName.Text;
+                                    string _path = textBarPath.Text;
+
+                                    if (tabText == _text &&
+                                        tabName == _name &&
+                                        tabPath == _path)
+                                    {
+                                        tabsArray.Remove(tab);
+                                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                        File.WriteAllText(layoutConfig, output);
+
+                                        clearAllPanels();
+
+                                        textBarText.Clear();
+                                        textBarName.Clear();
+                                        textBarPath.Clear();
+                                        tabsBox.SelectedIndex = -1;
+                                        textBarText.Select();
+
+                                        break;
+                                    }
                                 }
-                            }
 
-                            break;
+                                break;
 
-                        case "clear fields":
-                            textBarText.Clear();
-                            textBarName.Clear();
-                            textBarPath.Clear();
+                            case "add":
 
-                            tabsBox.Text = "";
+                                foreach (JObject tab in tabsArray)
+                                {
+                                    string tabName = tab["Name"].ToString();
+                                    string _name = textBarName.Text;
 
-                            textBarText.Select();
+                                    bool detected = tabsArray.Any(obj => obj["Name"].ToString() == _name);
+                                    bool doesNotContain = !detected;
 
-                            break;
+                                    if (doesNotContain)
+                                    {
+                                        JObject newTab = new JObject();
+                                        newTab["Text"] = textBarText.Text;
+                                        newTab["Path"] = textBarPath.Text;
+
+                                        if (textBarName.Text.StartsWith("tab_"))
+                                        {
+                                            newTab["Name"] = textBarName.Text;
+                                        }
+                                        else
+                                        {
+                                            newTab["Name"] = $"tab_{textBarName.Text}";
+                                        }
+
+                                        tabsArray.Add(newTab);
+                                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                        File.WriteAllText(layoutConfig, output);
+
+                                        clearAllPanels();
+
+                                        break;
+                                    }
+                                }
+
+                                break;
+
+                            case "clear fields":
+                                textBarText.Clear();
+                                textBarName.Clear();
+                                textBarPath.Clear();
+                                tabsBox.SelectedIndex = -1;
+                                textBarText.Select();
+
+                                break;
+                        }
                     }
                 }
             }
@@ -469,6 +554,25 @@ namespace LayoutCustomization
         {
             foreach (Control component in this.Controls)
             {
+                for (int i = this.Controls.Count - 1; i >= 0; i--)
+                {
+                    Control selected = this.Controls[i] as Control;
+                    if (selected != null)
+                    {
+                        try
+                        {
+                            this.Controls.RemoveAt(i);
+                            selected.Dispose();
+                        }
+                        catch (Exception err)
+                        {
+                            Debug.WriteLine($"ERROR: {err.ToString()}");
+                            MessageBox.Show($"Oops! It seems like we received an error. If you're uncertain what it\'s about, please message the developer with a screenshot:\n\n{err.ToString()}", this.Text, MessageBoxButtons.OK);
+                        }
+                    }
+                }
+
+                /*
                 if (component is Panel trackPanel)
                 {
                     for (int i = trackPanel.Controls.Count - 1; i >= 0; i--)
@@ -489,7 +593,32 @@ namespace LayoutCustomization
                         }
                     }
                 }
+
+                if (component is Button btn)
+                {
+                    for (int i = this.Controls.Count - 1; i >= 0; i--)
+                    {
+                        Button selected = this.Controls[i] as Button;
+
+                        if (selected != null)
+                        {
+                            try
+                            {
+                                this.Controls.RemoveAt(i);
+                                selected.Dispose();
+                            }
+                            catch (Exception err)
+                            {
+                                Debug.WriteLine($"ERROR: {err.ToString()}");
+                                MessageBox.Show($"Oops! It seems like we received an error. If you're uncertain what it\'s about, please message the developer with a screenshot:\n\n{err.ToString()}", this.Text, MessageBoxButtons.OK);
+                            }
+                        }
+                    }
+                }
+                */
             }
+
+            drawLayout();
         }
 
         private void deselectTrackPanel(Panel panel)
@@ -540,7 +669,7 @@ namespace LayoutCustomization
                 btn.ForeColor = Color.DodgerBlue;
                 btn.FlatAppearance.BorderColor = Color.DodgerBlue;
 
-                if (btn.Text == "Settings" && btn.Name.ToLower() == "tab_settings")
+                if (btn.Text.ToLower() == "settings" && btn.Name.ToLower() == "tab_settings")
                 {
                     Panel settingsPanel = this.Controls.Find("settings_panel_region", false).FirstOrDefault() as Panel;
                     settingsPanel.BringToFront();
@@ -707,7 +836,6 @@ namespace LayoutCustomization
                 }
                 */
             }
-
         }
 
         private void FindButtonAndPerformOperation(JArray tabsArray, Color borderColor, Button selectedButton, string selectedTrack)
