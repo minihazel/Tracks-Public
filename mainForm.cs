@@ -56,6 +56,12 @@ namespace LayoutCustomization
 
         public async void drawLayout()
         {
+            int fullWidth = 0;
+            int fullHeight = 0;
+            int fullLocX = 0;
+            int fullLocY = 0;
+            int lastInt = 0;
+
             string layout_content = File.ReadAllText(layoutConfig);
             JObject _layout = JObject.Parse(layout_content);
             JArray _tabs = (JArray)_layout["Tabs"];
@@ -89,12 +95,56 @@ namespace LayoutCustomization
                 _region.BorderStyle = BorderStyle.FixedSingle;
                 _region.Location = new Point(btn.Location.X + btn.Size.Width + spacing, 25);
                 _region.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+                _region.AutoScroll = false;
+                _region.HorizontalScroll.Enabled = false;
+                _region.HorizontalScroll.Visible = false;
+                _region.HorizontalScroll.Maximum = 0;
+                _region.AutoScroll = true;
 
                 this.Controls.Add(btn);
                 this.Controls.Add(_region);
+
+                fullWidth = panelWidth;
+                fullHeight = panelHeight;
+
+                fullLocX = btn.Location.X + btn.Size.Width + spacing;
+                fullLocY = 25;
+                lastInt = i;
             }
 
-            await listTracks();
+            Button lastBtn = this.Controls.OfType<Button>().Last();
+
+            if (lastBtn != null)
+            {
+                Button settingsBtn = new Button();
+                settingsBtn.Name = "settings_button";
+                settingsBtn.Text = "Settings";
+                settingsBtn.Size = new Size(180, 35);
+                settingsBtn.Location = new Point(15, lastBtn.Location.Y + 40);
+                settingsBtn.Visible = true;
+                settingsBtn.MouseDown += new MouseEventHandler(btn_MouseDown);
+                settingsBtn.FlatAppearance.BorderSize = 1;
+                settingsBtn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+                settingsBtn.FlatStyle = FlatStyle.Flat;
+                settingsBtn.Cursor = Cursors.Hand;
+
+                Panel settingsPanel = new Panel();
+                settingsPanel.Name = $"settings_panel";
+                settingsPanel.Size = new Size(fullWidth, fullHeight);
+                settingsPanel.BorderStyle = BorderStyle.FixedSingle;
+                settingsPanel.Location = new Point(fullLocX, fullLocY);
+                settingsPanel.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+                settingsPanel.AutoScroll = false;
+                settingsPanel.HorizontalScroll.Enabled = false;
+                settingsPanel.HorizontalScroll.Visible = false;
+                settingsPanel.HorizontalScroll.Maximum = 0;
+                settingsPanel.AutoScroll = true;
+
+                this.Controls.Add(settingsBtn);
+                this.Controls.Add(settingsPanel);
+            }
+
+            // await listTracks();
             selectFirstTab();
         }
 
@@ -188,35 +238,38 @@ namespace LayoutCustomization
                 }
                 btn.ForeColor = Color.DodgerBlue;
                 btn.FlatAppearance.BorderColor = Color.DodgerBlue;
+
+                Dictionary<string, Panel> buttonPanelMap = ReadLayoutTabs(layoutConfig);
+                if (buttonPanelMap.TryGetValue(btn.Name, out Panel targetPanel))
+                {
+                    targetPanel.BringToFront();
+                }
             }
 
             b_placeholder.Select();
         }
 
-        private (JObject item, Panel panel) findTabWithCorrespondingPanel(string path, string text)
+        private Dictionary<string, Panel> ReadLayoutTabs(string layoutConfig)
         {
-            string file_content = File.ReadAllText(path);
-            JObject json_content = JObject.Parse(file_content);
-            JArray tabs = (JArray)json_content["Tabs"];
+            string layoutContent = File.ReadAllText(layoutConfig);
+            JObject layoutObject = JObject.Parse(layoutContent);
+            JArray tabsArray = (JArray)layoutObject["Tabs"];
 
-            foreach (JObject item in tabs)
+            Dictionary<string, Panel> buttonPanelMap = new Dictionary<string, Panel>();
+
+            foreach (JObject item in tabsArray)
             {
-                string item_text = item["Text"].ToString();
+                string buttonName = item["Name"].ToString();
+                string panelName = buttonName + "_region"; // Assuming panel names have "_panel" suffix
 
-                if (item_text == text)
+                Panel panel = this.Controls.Find(panelName, true).FirstOrDefault() as Panel;
+                if (panel != null)
                 {
-                    string buttonName = item_text;
-                    string panelName = $"{item_text}_region";
-                    Panel panel = this.Controls.Find(panelName, true).FirstOrDefault() as Panel;
-
-                    if (panel != null)
-                    {
-                        return (item, panel);
-                    }
+                    buttonPanelMap.Add(buttonName, panel);
                 }
             }
 
-            return (null, null);
+            return buttonPanelMap;
         }
 
         private Dictionary<Button, (string Name, string Text, string Path, Panel Panel)> FindButtonProperties(string filePath, string buttonPrefix, string panelSuffix)
@@ -262,30 +315,37 @@ namespace LayoutCustomization
                 string path = kvp.Value.Path;
                 Panel panel = kvp.Value._panel;
 
-                DirectoryInfo pathInfo = new DirectoryInfo(path);
-                FileInfo[] pathFiles = pathInfo.GetFiles().OrderByDescending(p => p.CreationTimeUtc).ToArray();
-
-                for (int i = 0; pathFiles.Length > i; i++)
+                string[] acceptedExtensions = { ".mp3", ".wav", ".mp4" };
+                foreach (string extension in acceptedExtensions)
                 {
-                    Label lbl = new Label();
-                    lbl.Text = Path.GetFileName(pathFiles[i].FullName);
-                    lbl.AutoSize = false;
-                    lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
-                    lbl.TextAlign = ContentAlignment.MiddleLeft;
-                    lbl.Size = new Size(panel.Size.Width - 4, 25);
-                    lbl.Location = new Point(1, 1 + (i * 25));
-                    lbl.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
-                    lbl.BackColor = listBackcolor;
-                    lbl.ForeColor = Color.LightGray;
-                    lbl.Margin = new Padding(1, 1, 1, 1);
-                    lbl.Cursor = Cursors.Hand;
-                    lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
-                    lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
-                    lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
-                    lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
-                    lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
+                    DirectoryInfo pathInfo = new DirectoryInfo(path);
+                    FileInfo[] pathFiles = pathInfo.GetFiles()
+                        .Where(file => acceptedExtensions.Contains(file.Extension.ToLower()))
+                        .OrderByDescending(p => p.CreationTimeUtc)
+                        .ToArray();
 
-                    panel.Controls.Add(lbl);
+                    for (int i = 0; pathFiles.Length > i; i++)
+                    {
+                        Label lbl = new Label();
+                        lbl.Text = Path.GetFileName(pathFiles[i].FullName);
+                        lbl.AutoSize = false;
+                        lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
+                        lbl.TextAlign = ContentAlignment.MiddleLeft;
+                        lbl.Size = new Size(panel.Size.Width - 4, 25);
+                        lbl.Location = new Point(1, 1 + (i * 28));
+                        lbl.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
+                        lbl.BackColor = listBackcolor;
+                        lbl.ForeColor = Color.LightGray;
+                        lbl.Margin = new Padding(1, 1, 1, 1);
+                        lbl.Cursor = Cursors.Hand;
+                        lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
+                        lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
+                        lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
+                        lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
+                        lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
+
+                        panel.Controls.Add(lbl);
+                    }
                 }
             }
         }
@@ -392,7 +452,7 @@ namespace LayoutCustomization
 
                 if (associatedBtn != null)
                 {
-                    JArray tabsArray = readTabs() as JArray; // Replace `_layout` with the appropriate variable name
+                    JArray tabsArray = readTabs() as JArray;
                     FindButtonAndPerformOperation(tabsArray, activeColor, associatedBtn, label.Text);
 
                     Panel parentPanel = label.Parent as Panel;

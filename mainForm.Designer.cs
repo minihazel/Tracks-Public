@@ -50,9 +50,10 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(28)))), ((int)(((byte)(28)))));
             this.ClientSize = new System.Drawing.Size(665, 601);
             this.Controls.Add(this.b_placeholder);
+            this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Bahnschrift Light", 10F);
             this.ForeColor = System.Drawing.Color.LightGray;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "mainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Layout";
