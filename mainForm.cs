@@ -54,7 +54,7 @@ namespace LayoutCustomization
             b_placeholder.Select();
         }
 
-        public void drawLayout()
+        public async void drawLayout()
         {
             string layout_content = File.ReadAllText(layoutConfig);
             JObject _layout = JObject.Parse(layout_content);
@@ -63,7 +63,6 @@ namespace LayoutCustomization
             for (int i = 0; i < _tabs.Count; i++)
             {
                 JObject property = (JObject)_tabs[i];
-                Debug.WriteLine(property);
 
                 string property_text = property["Text"].ToString();
                 string property_name = property["Name"].ToString();
@@ -93,7 +92,84 @@ namespace LayoutCustomization
 
                 this.Controls.Add(btn);
                 this.Controls.Add(_region);
-            }   
+            }
+
+            await listTracks();
+            selectFirstTab();
+        }
+
+        private void selectFirstTab()
+        {
+            string layout_content = File.ReadAllText(layoutConfig);
+            JObject _layout = JObject.Parse(layout_content);
+            JArray _tabs = (JArray)_layout["Tabs"];
+
+            string firstMatch = _tabs[0]["Name"].ToString();
+            Button btn = this.Controls.Find(firstMatch, false).FirstOrDefault() as Button;
+
+            if (btn != null)
+            {
+                btn.FlatAppearance.BorderColor = Color.DodgerBlue;
+                btn.PerformClick();
+            }
+        }
+
+        private void clearAllPanels()
+        {
+            foreach (Control component in this.Controls)
+            {
+                if (component is Panel trackPanel)
+                {
+                    for (int i = trackPanel.Controls.Count - 1; i >= 0; i--)
+                    {
+                        Label selected = trackPanel.Controls[i] as Label;
+                        if (selected != null)
+                        {
+                            try
+                            {
+                                trackPanel.Controls.RemoveAt(i);
+                                selected.Dispose();
+                            }
+                            catch (Exception err)
+                            {
+                                Debug.WriteLine($"ERROR: {err.ToString()}");
+                                MessageBox.Show($"Oops! It seems like we received an error. If you're uncertain what it\'s about, please message the developer with a screenshot:\n\n{err.ToString()}", this.Text, MessageBoxButtons.OK);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void deselectTrackPanel(Panel panel)
+        {
+            foreach (Control component in panel.Controls)
+            {
+                if (component is Label lbl)
+                {
+                    if (lbl.BackColor != listHovercolor)
+                    {
+                        lbl.BackColor = listBackcolor;
+                    }
+                }
+            }
+        }
+
+        private void deselectAllPanels()
+        {
+            foreach (Control component in this.Controls)
+            {
+                if (component is Panel trackPanel)
+                {
+                    foreach (Control track in trackPanel.Controls)
+                    {
+                        if (track is Label lbl)
+                        {
+                            lbl.BackColor = listBackcolor;
+                        }
+                    }
+                }
+            }
         }
 
         private void btn_MouseDown(object sender, EventArgs e)
@@ -117,47 +193,222 @@ namespace LayoutCustomization
             b_placeholder.Select();
         }
 
-        public async Task listTracks(string[] paths)
+        private (JObject item, Panel panel) findTabWithCorrespondingPanel(string path, string text)
         {
-            await Task.Run(async () =>
+            string file_content = File.ReadAllText(path);
+            JObject json_content = JObject.Parse(file_content);
+            JArray tabs = (JArray)json_content["Tabs"];
+
+            foreach (JObject item in tabs)
             {
-                foreach (string path in paths)
+                string item_text = item["Text"].ToString();
+
+                if (item_text == text)
                 {
-                    DirectoryInfo regInfo = new DirectoryInfo(path);
+                    string buttonName = item_text;
+                    string panelName = $"{item_text}_region";
+                    Panel panel = this.Controls.Find(panelName, true).FirstOrDefault() as Panel;
 
-                    FileInfo[] regFiles = await Task.Run(() => regInfo.GetFiles().OrderByDescending(p => p.CreationTimeUtc).ToArray());
-
-                    for (int i = 0; regFiles.Length > i; i++)
+                    if (panel != null)
                     {
-                        Label lbl = new Label();
-                        lbl.Text = Path.GetFileName(regFiles[i].FullName);
-                        lbl.AutoSize = false;
-                        lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
-                        lbl.TextAlign = ContentAlignment.MiddleLeft;
-                        lbl.Size = new Size(regPanel.Size.Width - 4, 25);
-                        lbl.Location = new Point(1, 1 + (i * 28));
-                        lbl.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
-                        lbl.BackColor = listBackcolor;
-                        lbl.ForeColor = Color.LightGray;
-                        lbl.Margin = new Padding(1, 1, 1, 1);
-                        lbl.Cursor = Cursors.Hand;
-                        lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
-                        lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
-                        lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
-                        lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
-                        lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
-
-                        regLabels.Add(lbl);
-                        /*
-                        regPanel.Invoke((MethodInvoker)(() =>
-                        {
-                            regPanel.Controls.Add(lbl);
-                        }));
-                        */
+                        return (item, panel);
                     }
                 }
-            });
+            }
+
+            return (null, null);
         }
 
+        private Dictionary<Button, (string Name, string Text, string Path, Panel Panel)> FindButtonProperties(string filePath, string buttonPrefix, string panelSuffix)
+        {
+            string jsonContent = File.ReadAllText(filePath);
+            JObject jsonObject = JObject.Parse(jsonContent);
+            JArray tabsArray = (JArray)jsonObject["Tabs"];
+
+            Dictionary<Button, (string Name, string Text, string Path, Panel Panel)> buttonProperties = new Dictionary<Button, (string Name, string Text, string Path, Panel Panel)>();
+
+            foreach (Button button in this.Controls.OfType<Button>().Where(b => b.Name.StartsWith(buttonPrefix)))
+            {
+                string buttonName = button.Name;
+                JObject matchingItem = tabsArray.FirstOrDefault(item => item["Name"].ToString() == buttonName) as JObject;
+
+                if (matchingItem != null)
+                {
+                    string name = matchingItem["Name"].ToString();
+                    string text = matchingItem["Text"].ToString();
+                    string path = matchingItem["Path"].ToString();
+
+                    Panel panel = this.Controls.OfType<Panel>().FirstOrDefault(p => p.Name == buttonName + panelSuffix);
+
+                    buttonProperties.Add(button, (name, text, path, panel));
+                }
+            }
+
+            return buttonProperties;
+        }
+
+        public async Task listTracks()
+        {
+            string buttonPrefix = "tab_";
+            string panelSuffix = "_region";
+            Dictionary<Button, (string Name, string Text, string Path, Panel _panel)> buttonProperties =
+                FindButtonProperties(layoutConfig, buttonPrefix, panelSuffix);
+
+            foreach (var kvp in buttonProperties)
+            {
+                Button btn = kvp.Key;
+                string name = kvp.Value.Name;
+                string text = kvp.Value.Text;
+                string path = kvp.Value.Path;
+                Panel panel = kvp.Value._panel;
+
+                DirectoryInfo pathInfo = new DirectoryInfo(path);
+                FileInfo[] pathFiles = pathInfo.GetFiles().OrderByDescending(p => p.CreationTimeUtc).ToArray();
+
+                for (int i = 0; pathFiles.Length > i; i++)
+                {
+                    Label lbl = new Label();
+                    lbl.Text = Path.GetFileName(pathFiles[i].FullName);
+                    lbl.AutoSize = false;
+                    lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
+                    lbl.TextAlign = ContentAlignment.MiddleLeft;
+                    lbl.Size = new Size(panel.Size.Width - 4, 25);
+                    lbl.Location = new Point(1, 1 + (i * 25));
+                    lbl.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+                    lbl.BackColor = listBackcolor;
+                    lbl.ForeColor = Color.LightGray;
+                    lbl.Margin = new Padding(1, 1, 1, 1);
+                    lbl.Cursor = Cursors.Hand;
+                    lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
+                    lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
+                    lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
+                    lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
+                    lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
+
+                    panel.Controls.Add(lbl);
+                }
+            }
+        }
+
+        private void FindButtonAndPerformOperation(JArray tabsArray, Color borderColor, Button selectedButton, string selectedTrack)
+        {
+            if (selectedButton.FlatAppearance.BorderColor == borderColor)
+            {
+                string buttonName = selectedButton.Name;
+                string buttonText = selectedButton.Text;
+
+                JObject matchingItem = tabsArray.FirstOrDefault(item => item["Name"].ToString() == buttonName && item["Text"].ToString() == buttonText) as JObject;
+
+                if (matchingItem != null)
+                {
+                    string path = matchingItem["Path"].ToString();
+                    string fullPath = Path.Combine(path, selectedTrack);
+
+                    bool pathExists = File.Exists(fullPath);
+                    if (pathExists)
+                    {
+                        Process.Start(fullPath);
+                    }
+                }
+            }
+        }
+
+        private Button GetAssociatedButton(Label label)
+        {
+            string associatedButtonName = "tab_" + label.Name; // Adjust the prefix to match your button names
+            return this.Controls.OfType<Button>().FirstOrDefault(b => b.Name == associatedButtonName);
+        }
+
+        private JArray readTabs()
+        {
+            string layout_content = File.ReadAllText(layoutConfig);
+            JObject layoutObject = JObject.Parse(layout_content);
+            JArray tabs = (JArray)layoutObject["Tabs"];
+
+            return tabs;
+        }
+
+        private void lbl_MouseEnter(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Label label = (System.Windows.Forms.Label)sender;
+            if (label.Text != "")
+            {
+                if (label.BackColor != listSelectedcolor)
+                {
+                    label.BackColor = listHovercolor;
+                }
+            }
+        }
+
+        private void lbl_MouseLeave(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Label label = (System.Windows.Forms.Label)sender;
+            if (label.Text != "")
+            {
+                if (label.BackColor != listSelectedcolor)
+                {
+                    label.BackColor = listBackcolor;
+                }
+            }
+        }
+
+        private void lbl_MouseDown(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Label label = (System.Windows.Forms.Label)sender;
+
+            if (label.Text != "")
+            {
+                Panel parentPanel = label.Parent as Panel;
+                deselectTrackPanel(parentPanel);
+
+                if (label.BackColor == listHovercolor)
+                {
+                    label.BackColor = listSelectedcolor;
+                }
+                else
+                {
+                    label.BackColor = listHovercolor;
+                }
+            }
+        }
+
+        private void lbl_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Label label = (System.Windows.Forms.Label)sender;
+
+            if (label.Text != "")
+            {
+                Color activeColor = Color.DodgerBlue;
+                Button associatedBtn = null;
+
+                foreach (Control component in this.Controls)
+                {
+                    if (component is Button btn && btn.FlatAppearance.BorderColor == Color.DodgerBlue)
+                    {
+                        associatedBtn = btn;
+                        break;
+                    }
+                }
+
+                if (associatedBtn != null)
+                {
+                    JArray tabsArray = readTabs() as JArray; // Replace `_layout` with the appropriate variable name
+                    FindButtonAndPerformOperation(tabsArray, activeColor, associatedBtn, label.Text);
+
+                    Panel parentPanel = label.Parent as Panel;
+                    deselectTrackPanel(parentPanel);
+                    label.BackColor = listSelectedcolor;
+                }
+            }
+        }
+
+        private void lbl_MouseUp(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Label label = (System.Windows.Forms.Label)sender;
+            if (label.Text != "")
+            {
+                // label.BackColor = listHovercolor;
+            }
+        }
     }
 }
