@@ -254,7 +254,7 @@ namespace LayoutCustomization
 
             Button confirmBtn = new Button();
             confirmBtn.Name = "settings_confirmBtn";
-            confirmBtn.Text = "Edit";
+            confirmBtn.Text = "Add tab";
             confirmBtn.Size = new Size(180, 35);
             confirmBtn.Location = new Point(15, 225);
             confirmBtn.Visible = true;
@@ -288,9 +288,6 @@ namespace LayoutCustomization
 
             settingsPanel.Controls.Add(confirmBtn);
             settingsPanel.Controls.Add(openConfig);
-
-            textBarName.Enabled = false;
-            textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
 
             JArray tabsArray = readTabs() as JArray;
             foreach (JObject item in tabsArray)
@@ -390,27 +387,35 @@ namespace LayoutCustomization
                 {
                     switch (confirmBtn.Text.ToLower())
                     {
-                        case "edit":
+                        case "add tab":
                             confirmBtn.Text = "Remove";
-                            textBarNameTitle.Text = "Tab ID";
-                            textBarName.Enabled = true;
-
                             break;
+
                         case "remove":
-                            confirmBtn.Text = "Add";
-                            textBarNameTitle.Text = "Tab ID";
+                            confirmBtn.Text = "Edit";
+                            textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
+
+                            if (tabsBox.SelectedIndex < 0 && tabsBox.Text == "")
+                            {
+                                textBarText.Enabled = false;
+                                textBarPath.Enabled = false;
+                            }
+
+                            textBarName.Enabled = false;
 
                             break;
-                        case "add":
+
+                        case "edit":
                             confirmBtn.Text = "Clear fields";
                             textBarNameTitle.Text = "Tab ID";
 
+                            textBarText.Enabled = true;
+                            textBarPath.Enabled = true;
+                            textBarName.Enabled = true;
                             break;
-                        case "clear fields":
-                            confirmBtn.Text = "Edit";
-                            textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
-                            textBarName.Enabled = false;
 
+                        case "clear fields":
+                            confirmBtn.Text = "Add tab";
                             break;
                     }
                 }
