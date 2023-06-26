@@ -1091,7 +1091,7 @@ namespace LayoutCustomization
 
                 foundPanel = panel;
 
-                string[] acceptedExtensions = { ".mp3", ".wav", ".mp4" };
+                string[] acceptedExtensions = { ".mp3", ".wav" };
                 DirectoryInfo pathInfo = new DirectoryInfo(path);
                 FileInfo[] pathFiles = pathInfo.GetFiles()
                     .Where(file => acceptedExtensions.Contains(file.Extension.ToLower()))
