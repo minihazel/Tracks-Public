@@ -244,7 +244,7 @@ namespace LayoutCustomization
             TextBox textBarText = new TextBox();
             textBarText.Name = "settings_textBarText";
             textBarText.BorderStyle = BorderStyle.FixedSingle;
-            textBarText.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+            textBarText.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
             textBarText.Size = new Size(230, 35);
             textBarText.Location = new Point(15, 75);
             textBarText.Visible = true;
@@ -267,7 +267,7 @@ namespace LayoutCustomization
             TextBox textBarName = new TextBox();
             textBarName.Name = "settings_textBarName";
             textBarName.BorderStyle = BorderStyle.FixedSingle;
-            textBarName.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
+            textBarName.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
             textBarName.Size = new Size(230, 35);
             textBarName.Location = new Point(15, 130);
             textBarName.Visible = true;
@@ -290,13 +290,16 @@ namespace LayoutCustomization
             TextBox textBarPath = new TextBox();
             textBarPath.Name = "settings_textBarPath";
             textBarPath.BorderStyle = BorderStyle.FixedSingle;
-            textBarPath.Font = new Font("Bahnschrift Light", 11, FontStyle.Regular);
-            textBarPath.Size = new Size(230, 35);
+            textBarPath.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
+            textBarPath.Size = new Size(420, 35);
             textBarPath.Location = new Point(15, 185);
             textBarPath.Visible = true;
             textBarPath.KeyDown += new KeyEventHandler(textBar_KeyDown);
+            textBarPath.DragEnter += new DragEventHandler(textBarPath_DragEnter);
+            textBarPath.DragDrop += new DragEventHandler(textBarPath_DragDrop);
             textBarPath.ForeColor = Color.LightGray;
             textBarPath.BackColor = listBackcolor;
+            textBarPath.AllowDrop = true;
 
             // Buttons
 
@@ -304,13 +307,16 @@ namespace LayoutCustomization
             browseForFolder.Name = "settings_browseFolderBtn";
             browseForFolder.Text = "Browse";
             browseForFolder.Size = new Size(100, 30);
-            browseForFolder.Location = new Point(textBarPath.Size.Width + 25, textBarPath.Location.Y - 2);
+            browseForFolder.Location = new Point(textBarPath.Size.Width + 30, textBarPath.Location.Y - 3);
             browseForFolder.Visible = true;
-            browseForFolder.MouseDown += new MouseEventHandler(confirmBtn_MouseDown);
+            browseForFolder.MouseDown += new MouseEventHandler(browseForFolder_MouseDown);
             browseForFolder.FlatAppearance.BorderSize = 1;
             browseForFolder.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
             browseForFolder.FlatStyle = FlatStyle.Flat;
             browseForFolder.Cursor = Cursors.Hand;
+            browseForFolder.DragEnter += new DragEventHandler(browseForFolder_DragEnter);
+            browseForFolder.DragDrop += new DragEventHandler(browseForFolder_DragDrop);
+            browseForFolder.AllowDrop = true;
 
             Button confirmBtn = new Button();
             confirmBtn.Name = "settings_confirmBtn";
@@ -439,6 +445,77 @@ namespace LayoutCustomization
                     else if (textBar.Name == "settings_textBarPath")
                     {
                         confirmBtn.Select();
+                    }
+                }
+            }
+        }
+
+        private void browseForFolder_MouseDown(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Button browseForFolder = (System.Windows.Forms.Button)sender;
+            TextBox textBarPath = browseForFolder.Parent.Controls.Find("settings_textBarPath", false).FirstOrDefault() as TextBox;
+
+            if (browseForFolder != null)
+            {
+                var dlg = new FolderBrowser();
+                dlg.InputPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                if (dlg.ShowDialog(this.Handle) == true)
+                {
+                    string selectedFolder = dlg.ResultPath;
+                    textBarPath.Text = selectedFolder;
+                }
+            }
+
+            b_placeholder.Select();
+        }
+
+        private void textBarPath_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void textBarPath_DragDrop(object sender, DragEventArgs e)
+        {
+            System.Windows.Forms.TextBox textBarPath = (System.Windows.Forms.TextBox)sender;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string firstFile = files[0];
+
+                if (firstFile != null)
+                {
+                    textBarPath.Text = firstFile;
+                }
+            }
+        }
+
+        private void browseForFolder_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void browseForFolder_DragDrop(object sender, DragEventArgs e)
+        {
+            System.Windows.Forms.Button browseForFolder = (System.Windows.Forms.Button)sender;
+            TextBox textBarPath = browseForFolder.Parent.Controls.Find("settings_textBarPath", false).FirstOrDefault() as TextBox;
+
+            if (browseForFolder != null)
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    string firstFile = files[0];
+
+                    if (firstFile != null)
+                    {
+                        textBarPath.Text = firstFile;
                     }
                 }
             }
