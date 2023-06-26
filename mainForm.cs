@@ -50,11 +50,15 @@ namespace LayoutCustomization
             {
                 this.Size = new Size(796, 615);
                 drawLayout();
-
             }
             else
             {
-                this.Text = "Layout.json doesn\'t exist";
+                JObject json = new JObject();
+                json["Tabs"] = new JArray();
+                string output = JsonConvert.SerializeObject(json, Formatting.Indented);
+                File.WriteAllText(layoutConfig, output);
+
+                Application.Restart();
             }
 
             b_placeholder.Select();
@@ -74,67 +78,111 @@ namespace LayoutCustomization
             JObject _layout = JObject.Parse(layout_content);
             JArray _tabs = (JArray)_layout["Tabs"];
 
-            for (int i = 0; i < _tabs.Count; i++)
+            if (_tabs.Count > 0)
             {
-                JObject property = (JObject)_tabs[i];
+                for (int i = 0; i < _tabs.Count; i++)
+                {
+                    JObject property = (JObject)_tabs[i];
 
-                string property_text = property["Text"].ToString();
-                string property_name = property["Name"].ToString();
+                    string property_text = property["Text"].ToString();
+                    string property_name = property["Name"].ToString();
 
-                Button btn = new Button();
-                btn.Name = property_name;
-                btn.Text = property_text;
-                btn.Size = new Size(180, 35);
-                btn.Location = new Point(15, 25 + (i * 40));
-                btn.Visible = true;
-                btn.MouseDown += new MouseEventHandler(btn_MouseDown);
-                btn.FlatAppearance.BorderSize = 1;
-                btn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
-                btn.FlatStyle= FlatStyle.Flat;
-                btn.Cursor = Cursors.Hand;
+                    Button btn = new Button();
+                    btn.Name = property_name;
+                    btn.Text = property_text;
+                    btn.Size = new Size(180, 35);
+                    btn.Location = new Point(15, 25 + (i * 40));
+                    btn.Visible = true;
+                    btn.MouseDown += new MouseEventHandler(btn_MouseDown);
+                    btn.FlatAppearance.BorderSize = 1;
+                    btn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.Cursor = Cursors.Hand;
 
-                int spacing = 10;
-                int panelWidth = this.ClientSize.Width - btn.Size.Width - spacing - 20;
-                int panelHeight = this.ClientSize.Height - 30;
+                    int spacing = 10;
+                    int panelWidth = this.ClientSize.Width - btn.Size.Width - spacing - 20;
+                    int panelHeight = this.ClientSize.Height - 30;
 
-                Panel _region = new Panel();
-                _region.Name = $"{property_name}_region";
-                _region.Size = new Size(panelWidth, panelHeight);
-                _region.BorderStyle = BorderStyle.FixedSingle;
-                _region.Location = new Point(btn.Location.X + btn.Size.Width + spacing, 25);
-                _region.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
-                _region.AutoScroll = false;
-                _region.HorizontalScroll.Enabled = false;
-                _region.HorizontalScroll.Visible = false;
-                _region.HorizontalScroll.Maximum = 0;
-                _region.AutoScroll = true;
+                    Panel _region = new Panel();
+                    _region.Name = $"{property_name}_region";
+                    _region.Size = new Size(panelWidth, panelHeight);
+                    _region.BorderStyle = BorderStyle.FixedSingle;
+                    _region.Location = new Point(btn.Location.X + btn.Size.Width + spacing, 25);
+                    _region.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+                    _region.AutoScroll = false;
+                    _region.HorizontalScroll.Enabled = false;
+                    _region.HorizontalScroll.Visible = false;
+                    _region.HorizontalScroll.Maximum = 0;
+                    _region.AutoScroll = true;
 
-                this.Controls.Add(btn);
-                this.Controls.Add(_region);
+                    this.Controls.Add(btn);
+                    this.Controls.Add(_region);
 
-                fullWidth = panelWidth;
-                fullHeight = panelHeight;
+                    fullWidth = panelWidth;
+                    fullHeight = panelHeight;
 
-                fullLocX = btn.Location.X + btn.Size.Width + spacing;
-                fullLocY = 25;
-                lastInt = i;
+                    fullLocX = btn.Location.X + btn.Size.Width + spacing;
+                    fullLocY = 25;
+                    lastInt = i;
+                }
+
+                Button lastBtn = this.Controls.OfType<Button>().LastOrDefault();
+
+                if (lastBtn != null)
+                {
+                    Button settingsBtn = new Button();
+                    settingsBtn.Name = "tab_settings";
+                    settingsBtn.Text = "SETTINGS";
+                    settingsBtn.Size = new Size(180, 35);
+                    settingsBtn.Location = new Point(15, lastBtn.Location.Y + 40);
+                    settingsBtn.Visible = true;
+                    settingsBtn.MouseDown += new MouseEventHandler(btn_MouseDown);
+                    settingsBtn.FlatAppearance.BorderSize = 1;
+                    settingsBtn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+                    settingsBtn.FlatStyle = FlatStyle.Flat;
+                    settingsBtn.Cursor = Cursors.Hand;
+
+                    Panel settingsPanel = new Panel();
+                    settingsPanel.Name = $"settings_panel_region";
+                    settingsPanel.Size = new Size(fullWidth, fullHeight);
+                    settingsPanel.BorderStyle = BorderStyle.FixedSingle;
+                    settingsPanel.Location = new Point(fullLocX, fullLocY);
+                    settingsPanel.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+                    settingsPanel.AutoScroll = false;
+                    settingsPanel.HorizontalScroll.Enabled = false;
+                    settingsPanel.HorizontalScroll.Visible = false;
+                    settingsPanel.HorizontalScroll.Maximum = 0;
+                    settingsPanel.AutoScroll = true;
+
+                    this.Controls.Add(settingsBtn);
+                    this.Controls.Add(settingsPanel);
+
+                    fillSettingsTab();
+                }
             }
-
-            Button lastBtn = this.Controls.OfType<Button>().Last();
-
-            if (lastBtn != null)
+            else
             {
                 Button settingsBtn = new Button();
                 settingsBtn.Name = "tab_settings";
                 settingsBtn.Text = "SETTINGS";
                 settingsBtn.Size = new Size(180, 35);
-                settingsBtn.Location = new Point(15, lastBtn.Location.Y + 40);
+                settingsBtn.Location = new Point(15, 25);
                 settingsBtn.Visible = true;
                 settingsBtn.MouseDown += new MouseEventHandler(btn_MouseDown);
                 settingsBtn.FlatAppearance.BorderSize = 1;
                 settingsBtn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
                 settingsBtn.FlatStyle = FlatStyle.Flat;
                 settingsBtn.Cursor = Cursors.Hand;
+
+                int spacing = 10;
+                int panelWidth = this.ClientSize.Width - settingsBtn.Size.Width - spacing - 20;
+                int panelHeight = this.ClientSize.Height - 30;
+
+                fullWidth = panelWidth;
+                fullHeight = panelHeight;
+
+                fullLocX = settingsBtn.Location.X + settingsBtn.Size.Width + spacing;
+                fullLocY = 25;
 
                 Panel settingsPanel = new Panel();
                 settingsPanel.Name = $"settings_panel_region";
@@ -252,6 +300,18 @@ namespace LayoutCustomization
 
             // Buttons
 
+            Button browseForFolder = new Button();
+            browseForFolder.Name = "settings_browseFolderBtn";
+            browseForFolder.Text = "Browse";
+            browseForFolder.Size = new Size(100, 30);
+            browseForFolder.Location = new Point(textBarPath.Size.Width + 25, textBarPath.Location.Y - 2);
+            browseForFolder.Visible = true;
+            browseForFolder.MouseDown += new MouseEventHandler(confirmBtn_MouseDown);
+            browseForFolder.FlatAppearance.BorderSize = 1;
+            browseForFolder.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+            browseForFolder.FlatStyle = FlatStyle.Flat;
+            browseForFolder.Cursor = Cursors.Hand;
+
             Button confirmBtn = new Button();
             confirmBtn.Name = "settings_confirmBtn";
             confirmBtn.Text = "Add tab";
@@ -268,7 +328,7 @@ namespace LayoutCustomization
             openConfig.Name = "settings_openConfig";
             openConfig.Text = "Open configuration file";
             openConfig.Size = new Size(180, 35);
-            openConfig.Location = new Point(confirmBtn.Size.Width + 25, confirmBtn.Location.Y);
+            openConfig.Location = new Point(15, confirmBtn.Location.Y + 100);
             openConfig.Visible = true;
             openConfig.MouseDown += new MouseEventHandler(openConfig_MouseDown);
             openConfig.FlatAppearance.BorderSize = 1;
@@ -276,6 +336,34 @@ namespace LayoutCustomization
             openConfig.FlatStyle = FlatStyle.Flat;
             openConfig.Cursor = Cursors.Hand;
 
+            Button resetConfig = new Button();
+            resetConfig.Name = "settings_resetConfig";
+            resetConfig.Text = "Reset configuration file";
+            resetConfig.Size = new Size(180, 35);
+            resetConfig.Location = new Point(15, openConfig.Location.Y + 40);
+            resetConfig.Visible = true;
+            resetConfig.MouseDown += new MouseEventHandler(resetConfig_MouseDown);
+            resetConfig.FlatAppearance.BorderSize = 1;
+            resetConfig.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+            resetConfig.FlatStyle = FlatStyle.Flat;
+            resetConfig.Cursor = Cursors.Hand;
+
+            Button importConfig = new Button();
+            importConfig.Name = "settings_importConfig";
+            importConfig.Text = "Import";
+            importConfig.Size = new Size(355, 35);
+            importConfig.Location = new Point(15, resetConfig.Location.Y + 100);
+            importConfig.Visible = true;
+            importConfig.MouseDown += new MouseEventHandler(importConfig_MouseDown);
+            importConfig.FlatAppearance.BorderSize = 1;
+            importConfig.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+            importConfig.FlatStyle = FlatStyle.Flat;
+            importConfig.Cursor = Cursors.Hand;
+            importConfig.DragEnter += new DragEventHandler(importConfig_DragEnter);
+            importConfig.DragDrop += new DragEventHandler(importConfig_DragDrop);
+            importConfig.AllowDrop = true;
+
+            // Control generating
 
             settingsPanel.Controls.Add(tabsBox);
 
@@ -285,9 +373,14 @@ namespace LayoutCustomization
             settingsPanel.Controls.Add(textBarName);
             settingsPanel.Controls.Add(textBarPathTitle);
             settingsPanel.Controls.Add(textBarPath);
+            settingsPanel.Controls.Add(browseForFolder);
 
             settingsPanel.Controls.Add(confirmBtn);
             settingsPanel.Controls.Add(openConfig);
+            settingsPanel.Controls.Add(importConfig);
+            settingsPanel.Controls.Add(resetConfig);
+
+            // After-gen action
 
             JArray tabsArray = readTabs() as JArray;
             foreach (JObject item in tabsArray)
@@ -366,6 +459,119 @@ namespace LayoutCustomization
             b_placeholder.Select();
         }
 
+        private void resetConfig_MouseDown(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Button resetConfig = (System.Windows.Forms.Button)sender;
+
+            if (resetConfig != null)
+            {
+                if (MessageBox.Show("Are you sure you want to reset your configuration file?\n\nThis is irreversible!", this.Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    string jsonContent = File.ReadAllText(layoutConfig);
+                    JObject jsonObject = JObject.Parse(jsonContent);
+                    JArray tabsArray = (JArray)jsonObject["Tabs"];
+
+                    tabsArray.Clear();
+                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                    File.WriteAllText(layoutConfig, output);
+
+                    clearAllPanels();
+                }
+            }
+
+            b_placeholder.Select();
+        }
+
+        private void importConfig_MouseDown(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Button importConfigBtn = (System.Windows.Forms.Button)sender;
+
+            OpenFileDialog opener = new OpenFileDialog();
+            opener.Filter = "JSON files (*.json)|*.json";
+            opener.Title = "Select a configuration file (layout.json)";
+
+            if (opener.ShowDialog() == DialogResult.OK)
+            {
+                string selectedPath = opener.FileName;
+                bool pathExists = File.Exists(selectedPath);
+                string fileName = Path.GetFileName(selectedPath);
+
+                if (pathExists)
+                {
+                    if (fileName == "layout.json")
+                    {
+                        importConfigBtn.Text = $"Importing {selectedPath} ...";
+                        importConfigBtn.Size = new Size(350, 35);
+
+                        System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+                        timer.Interval = 1000;
+                        timer.Tick += ((_sender, _e) =>
+                        {
+                            File.Copy(selectedPath, layoutConfig, true);
+                            clearAllPanels();
+
+                            timer.Stop();
+                            timer.Dispose();
+                        });
+                        timer.Start();
+                    }
+                }
+            }
+        }
+
+        private void importConfig_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void importConfig_DragDrop(object sender, DragEventArgs e)
+        {
+            System.Windows.Forms.Button importConfigBtn = (System.Windows.Forms.Button)sender;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                string firstFile = files[0];
+                string layoutFile = Path.GetFileName(firstFile);
+
+                if (layoutFile == "layout.json")
+                {
+                    bool layoutExists = File.Exists(layoutFile);
+                    if (layoutExists)
+                    {
+                        if (MessageBox.Show($"Detected configuration file\n\n\"{firstFile}\"\n\nWould you like to import and refresh?", this.Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        {
+                            // File.Copy(firstFile, layoutConfig, true);
+                            // clearAllPanels();
+
+                            importConfigBtn.Text = $"Importing {firstFile} ...";
+                            importConfigBtn.Size = new Size(350, 35);
+
+                            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+                            timer.Interval = 1000;
+                            timer.Tick += ((_sender, _e) =>
+                            {
+                                File.Copy(firstFile, layoutConfig, true);
+                                clearAllPanels();
+
+                                timer.Stop();
+                                timer.Dispose();
+                            });
+                            timer.Start();
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("We only allow \"layout.json\" configurations, please try again!", this.Text, MessageBoxButtons.OK);
+                }
+            }
+        }
+
         private void confirmBtn_MouseDown(object sender, MouseEventArgs e)
         {
             System.Windows.Forms.Button confirmBtn = (System.Windows.Forms.Button)sender;
@@ -423,7 +629,7 @@ namespace LayoutCustomization
                 {
                     if (textBarText.Text == "" && textBarName.Text == "" && textBarPath.Text == "")
                     {
-                        MessageBox.Show("Please select an item to edit to remove.", this.Text, MessageBoxButtons.OK);
+                        MessageBox.Show("Please select an item to edit or remove, or fill out the fields and add a new tab.", this.Text, MessageBoxButtons.OK);
 
                     }
                     else
@@ -488,38 +694,66 @@ namespace LayoutCustomization
 
                                 break;
 
-                            case "add":
+                            case "add tab":
 
-                                foreach (JObject tab in tabsArray)
+                                if (tabsArray.Count == 0)
                                 {
-                                    string tabName = tab["Name"].ToString();
-                                    string _name = textBarName.Text;
+                                    JObject newTab = new JObject();
+                                    newTab["Text"] = textBarText.Text;
 
-                                    bool detected = tabsArray.Any(obj => obj["Name"].ToString() == _name);
-                                    bool doesNotContain = !detected;
-
-                                    if (doesNotContain)
+                                    if (textBarName.Text.StartsWith("tab_"))
                                     {
-                                        JObject newTab = new JObject();
-                                        newTab["Text"] = textBarText.Text;
-                                        newTab["Path"] = textBarPath.Text;
+                                        newTab["Name"] = textBarName.Text;
+                                    }
+                                    else
+                                    {
+                                        newTab["Name"] = $"tab_{textBarName.Text}";
+                                    }
 
-                                        if (textBarName.Text.StartsWith("tab_"))
+                                    newTab["Path"] = textBarPath.Text;
+
+                                    tabsArray.Add(newTab);
+                                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                    File.WriteAllText(layoutConfig, output);
+
+                                    clearAllPanels();
+
+                                    break;
+                                }
+                                else
+                                {
+
+                                    foreach (JObject tab in tabsArray)
+                                    {
+                                        string tabName = tab["Name"].ToString();
+                                        string _name = textBarName.Text;
+
+                                        bool detected = tabsArray.Any(obj => obj["Name"].ToString() == _name);
+                                        bool doesNotContain = !detected;
+
+                                        if (doesNotContain)
                                         {
-                                            newTab["Name"] = textBarName.Text;
+                                            JObject newTab = new JObject();
+                                            newTab["Text"] = textBarText.Text;
+                                            newTab["Path"] = textBarPath.Text;
+
+                                            if (textBarName.Text.StartsWith("tab_"))
+                                            {
+                                                newTab["Name"] = textBarName.Text;
+                                            }
+                                            else
+                                            {
+                                                newTab["Name"] = $"tab_{textBarName.Text}";
+                                            }
+
+                                            tabsArray.Add(newTab);
+                                            string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                            File.WriteAllText(layoutConfig, output);
+
+                                            clearAllPanels();
+
+                                            break;
                                         }
-                                        else
-                                        {
-                                            newTab["Name"] = $"tab_{textBarName.Text}";
-                                        }
-
-                                        tabsArray.Add(newTab);
-                                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                                        File.WriteAllText(layoutConfig, output);
-
-                                        clearAllPanels();
-
-                                        break;
                                     }
                                 }
 
@@ -545,13 +779,29 @@ namespace LayoutCustomization
             JObject _layout = JObject.Parse(layout_content);
             JArray _tabs = (JArray)_layout["Tabs"];
 
-            string firstMatch = _tabs[0]["Name"].ToString();
-            Button btn = this.Controls.Find(firstMatch, false).FirstOrDefault() as Button;
-
-            if (btn != null)
+            if (_tabs.Count > 0)
             {
-                btn.FlatAppearance.BorderColor = Color.DodgerBlue;
-                btn.PerformClick();
+                string firstMatch = _tabs[0]["Name"].ToString();
+                Button btn = this.Controls.Find(firstMatch, false).FirstOrDefault() as Button;
+
+                if (btn != null)
+                {
+                    btn.FlatAppearance.BorderColor = Color.DodgerBlue;
+                    btn.PerformClick();
+                }
+            }
+            else
+            {
+                Button tabSettingsBtn = this.Controls.Find("tab_settings", false).FirstOrDefault() as Button;
+                
+                // Button btn = this.Controls.OfType<Button>().LastOrDefault();
+
+                if (tabSettingsBtn != null)
+                {
+                    tabSettingsBtn.PerformClick();
+                    tabSettingsBtn.FlatAppearance.BorderColor = Color.DodgerBlue;
+                    tabSettingsBtn.ForeColor = Color.DodgerBlue;
+                }
             }
         }
 
