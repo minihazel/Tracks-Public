@@ -1128,45 +1128,6 @@ namespace LayoutCustomization
                 foundPanel.Controls.AddRange(allTracks);
 
                 tracks.Clear();
-
-                /*
-                string[] acceptedExtensions = { ".mp3", ".wav", ".mp4" };
-
-                foreach (string extension in acceptedExtensions)
-                {
-                    DirectoryInfo pathInfo = new DirectoryInfo(path);
-                    FileInfo[] pathFiles = pathInfo.GetFiles()
-                        .Where(file => acceptedExtensions.Contains(file.Extension.ToLower()))
-                        .OrderByDescending(p => p.CreationTimeUtc)
-                        .ToArray();
-
-                    for (int i = 0; pathFiles.Length > i; i++)
-                    {
-                        Label lbl = new Label();
-                        lbl.Text = Path.GetFileName(pathFiles[i].FullName);
-                        lbl.AutoSize = false;
-                        lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
-                        lbl.TextAlign = ContentAlignment.MiddleLeft;
-                        lbl.Size = new Size(panel.Size.Width - 4, 25);
-                        lbl.Location = new Point(1, 1 + (i * 28));
-                        lbl.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
-                        lbl.BackColor = listBackcolor;
-                        lbl.ForeColor = Color.LightGray;
-                        lbl.Margin = new Padding(1, 1, 1, 1);
-                        lbl.Cursor = Cursors.Hand;
-                        lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
-                        lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
-                        lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
-                        lbl.MouseDoubleClick += new MouseEventHandler(lbl_MouseDoubleClick);
-                        lbl.MouseUp += new MouseEventHandler(lbl_MouseUp);
-
-                        await Task.Run(() =>
-                        {
-                            panel.Controls.Add(lbl);
-                        });
-                    }
-                }
-                */
             }
         }
 
