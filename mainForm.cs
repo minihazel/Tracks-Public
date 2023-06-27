@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,6 +35,12 @@ namespace LayoutCustomization
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("mpr.dll", CharSet = CharSet.Auto)]
+        public static extern int WNetGetConnection(
+        [MarshalAs(UnmanagedType.LPTStr)] string localName,
+        [MarshalAs(UnmanagedType.LPTStr)] StringBuilder remoteName,
+        ref int length);
 
         public string currentDir = Environment.CurrentDirectory;
         public string layoutConfig;
@@ -462,6 +469,7 @@ namespace LayoutCustomization
                 if (dlg.ShowDialog(this.Handle) == true)
                 {
                     string selectedFolder = dlg.ResultPath;
+
                     textBarPath.Text = selectedFolder;
                 }
             }
@@ -1249,6 +1257,14 @@ namespace LayoutCustomization
             if (label.Text != "")
             {
                 // label.BackColor = listHovercolor;
+            }
+        }
+
+        private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("", this.Text, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+            {
+
             }
         }
     }
