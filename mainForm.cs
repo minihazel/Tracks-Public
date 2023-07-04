@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using LayoutCustomization.Properties;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,7 @@ namespace LayoutCustomization
             layoutConfig = Path.Combine(currentDir, "layout.json");
             if (File.Exists(layoutConfig))
             {
+                this.Icon = Resources.wave_sound;
                 this.Size = new Size(796, 615);
                 drawLayout();
             }
@@ -1262,10 +1264,18 @@ namespace LayoutCustomization
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (MessageBox.Show("", this.Text, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+            /*
+            string content = "Quit or hide in the tray? [Y/N]";
+
+            if (MessageBox.Show(content, this.Text, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
             {
 
             }
+            else if (MessageBox.Show(content, this.Text, MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+            {
+
+            }
+            */
         }
     }
 }
