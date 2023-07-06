@@ -788,23 +788,34 @@ namespace LayoutCustomization
                                     JObject newTab = new JObject();
                                     newTab["Text"] = textBarText.Text;
 
-                                    if (textBarName.Text.StartsWith("tab_"))
+                                    if (textBarName.Text == "" || textBarName.Text == null)
                                     {
-                                        newTab["Name"] = textBarName.Text;
+                                        newTab["Name"] = $"tab_{textBarText.Text.ToLower()}";
+                                        newTab["Path"] = textBarPath.Text;
+
+                                        tabsArray.Add(newTab);
+                                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                        File.WriteAllText(layoutConfig, output);
                                     }
                                     else
                                     {
-                                        newTab["Name"] = $"tab_{textBarName.Text}";
+                                        if (textBarName.Text.StartsWith("tab_"))
+                                        {
+                                            newTab["Name"] = textBarName.Text;
+                                        }
+                                        else
+                                        {
+                                            newTab["Name"] = $"tab_{textBarName.Text}";
+                                        }
+
+                                        newTab["Path"] = textBarPath.Text;
+
+                                        tabsArray.Add(newTab);
+                                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                        File.WriteAllText(layoutConfig, output);
                                     }
 
-                                    newTab["Path"] = textBarPath.Text;
-
-                                    tabsArray.Add(newTab);
-                                    string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                                    File.WriteAllText(layoutConfig, output);
-
                                     clearAllPanels();
-
                                     break;
                                 }
                                 else
@@ -1118,7 +1129,7 @@ namespace LayoutCustomization
                     lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
                     lbl.TextAlign = ContentAlignment.MiddleLeft;
                     lbl.Size = new Size(panel.Size.Width - 4, 25);
-                    lbl.Location = new Point(1, 1 + (index * 28));
+                    lbl.Location = new Point(1, 1 + (index * 26));
                     lbl.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
                     lbl.BackColor = listBackcolor;
                     lbl.ForeColor = Color.LightGray;
