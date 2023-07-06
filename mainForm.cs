@@ -788,7 +788,7 @@ namespace LayoutCustomization
                                     JObject newTab = new JObject();
                                     newTab["Text"] = textBarText.Text;
 
-                                    if (textBarName.Text == "" || textBarName.Text == null)
+                                    if (textBarName.Text == "" && textBarName.Text.Length == 0)
                                     {
                                         newTab["Name"] = $"tab_{textBarText.Text.ToLower()}";
                                         newTab["Path"] = textBarPath.Text;
@@ -835,18 +835,30 @@ namespace LayoutCustomization
                                             newTab["Text"] = textBarText.Text;
                                             newTab["Path"] = textBarPath.Text;
 
-                                            if (textBarName.Text.StartsWith("tab_"))
+                                            if (textBarName.Text == "" && textBarName.Text.Length == 0)
                                             {
-                                                newTab["Name"] = textBarName.Text;
+                                                newTab["Name"] = $"tab_{textBarText.Text.ToLower()}";
+                                                newTab["Path"] = textBarPath.Text;
+
+                                                tabsArray.Add(newTab);
+                                                string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                                File.WriteAllText(layoutConfig, output);
                                             }
                                             else
                                             {
-                                                newTab["Name"] = $"tab_{textBarName.Text}";
-                                            }
+                                                if (textBarName.Text.StartsWith("tab_"))
+                                                {
+                                                    newTab["Name"] = textBarName.Text;
+                                                }
+                                                else
+                                                {
+                                                    newTab["Name"] = $"tab_{textBarName.Text}";
+                                                }
 
-                                            tabsArray.Add(newTab);
-                                            string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                                            File.WriteAllText(layoutConfig, output);
+                                                tabsArray.Add(newTab);
+                                                string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                                File.WriteAllText(layoutConfig, output);
+                                            }
 
                                             clearAllPanels();
 
