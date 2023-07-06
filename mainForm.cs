@@ -333,6 +333,7 @@ namespace LayoutCustomization
             confirmBtn.Size = new Size(180, 35);
             confirmBtn.Location = new Point(15, 225);
             confirmBtn.Visible = true;
+            confirmBtn.Click += new EventHandler(confirmBtn_Click);
             confirmBtn.MouseDown += new MouseEventHandler(confirmBtn_MouseDown);
             confirmBtn.FlatAppearance.BorderSize = 1;
             confirmBtn.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
@@ -453,7 +454,10 @@ namespace LayoutCustomization
                     }
                     else if (textBar.Name == "settings_textBarPath")
                     {
-                        confirmBtn.Select();
+                        if (confirmBtn.Text.ToLower() == "add tab")
+                        {
+                            confirmBtn.PerformClick();
+                        }
                     }
                 }
             }
@@ -659,6 +663,105 @@ namespace LayoutCustomization
             }
         }
 
+        private void confirmBtn_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Button confirmBtn = (System.Windows.Forms.Button)sender;
+
+            string jsonContent = File.ReadAllText(layoutConfig);
+            JObject jsonObject = JObject.Parse(jsonContent);
+            JArray tabsArray = (JArray)jsonObject["Tabs"];
+
+            ComboBox tabsBox = confirmBtn.Parent.Controls.Find("settings_tabsBox", false).FirstOrDefault() as ComboBox;
+            TextBox textBarText = confirmBtn.Parent.Controls.Find("settings_textBarText", false).FirstOrDefault() as TextBox;
+            TextBox textBarName = confirmBtn.Parent.Controls.Find("settings_textBarName", false).FirstOrDefault() as TextBox;
+            TextBox textBarPath = confirmBtn.Parent.Controls.Find("settings_textBarPath", false).FirstOrDefault() as TextBox;
+
+            Label textBarNameTitle = confirmBtn.Parent.Controls.Find("settings_textBarNameTitle", false).FirstOrDefault() as Label;
+
+            if (confirmBtn != null)
+            {
+                if (tabsArray.Count == 0)
+                {
+                    JObject newTab = new JObject();
+                    newTab["Text"] = textBarText.Text;
+
+                    if (textBarName.Text == "" && textBarName.Text.Length == 0)
+                    {
+                        newTab["Name"] = $"tab_{textBarText.Text.ToLower()}";
+                        newTab["Path"] = textBarPath.Text;
+
+                        tabsArray.Add(newTab);
+                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                        File.WriteAllText(layoutConfig, output);
+                    }
+                    else
+                    {
+                        if (textBarName.Text.StartsWith("tab_"))
+                        {
+                            newTab["Name"] = textBarName.Text;
+                        }
+                        else
+                        {
+                            newTab["Name"] = $"tab_{textBarName.Text}";
+                        }
+
+                        newTab["Path"] = textBarPath.Text;
+
+                        tabsArray.Add(newTab);
+                        string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                        File.WriteAllText(layoutConfig, output);
+                    }
+
+                    clearAllPanels();
+                }
+                else
+                {
+                    foreach (JObject tab in tabsArray)
+                    {
+                        string tabName = tab["Name"].ToString();
+                        string _name = textBarName.Text;
+
+                        bool detected = tabsArray.Any(obj => obj["Name"].ToString() == _name);
+                        bool doesNotContain = !detected;
+
+                        if (doesNotContain)
+                        {
+                            JObject newTab = new JObject();
+                            newTab["Text"] = textBarText.Text;
+                            newTab["Path"] = textBarPath.Text;
+
+                            if (textBarName.Text == "" && textBarName.Text.Length == 0)
+                            {
+                                newTab["Name"] = $"tab_{textBarText.Text.ToLower()}";
+                                newTab["Path"] = textBarPath.Text;
+
+                                tabsArray.Add(newTab);
+                                string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                File.WriteAllText(layoutConfig, output);
+                            }
+                            else
+                            {
+                                if (textBarName.Text.StartsWith("tab_"))
+                                {
+                                    newTab["Name"] = textBarName.Text;
+                                }
+                                else
+                                {
+                                    newTab["Name"] = $"tab_{textBarName.Text}";
+                                }
+
+                                tabsArray.Add(newTab);
+                                string output = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                File.WriteAllText(layoutConfig, output);
+                            }
+
+                            clearAllPanels();
+                        }
+                    }
+                }
+            }
+        }
+
         private void confirmBtn_MouseDown(object sender, MouseEventArgs e)
         {
             System.Windows.Forms.Button confirmBtn = (System.Windows.Forms.Button)sender;
@@ -714,7 +817,7 @@ namespace LayoutCustomization
                 }
                 else if (e.Button == MouseButtons.Left)
                 {
-                    if (textBarText.Text == "" && textBarName.Text == "" && textBarPath.Text == "")
+                    if (textBarText.Text == "" && textBarPath.Text == "")
                     {
                         MessageBox.Show("Please select an item to edit or remove, or fill out the fields and add a new tab.", this.Text, MessageBoxButtons.OK);
 
