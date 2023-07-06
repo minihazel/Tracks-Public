@@ -45,7 +45,7 @@
             // 
             // loading_icon
             // 
-            this.loading_icon.BackgroundImage = global::LayoutCustomization.Properties.Resources.splashscreen_loading_icon;
+            this.loading_icon.BackgroundImage = global::Tracks.Properties.Resources.splashscreen_loading_icon;
             this.loading_icon.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.loading_icon.Location = new System.Drawing.Point(311, 191);
             this.loading_icon.Name = "loading_icon";
