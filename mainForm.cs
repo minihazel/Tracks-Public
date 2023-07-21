@@ -380,6 +380,19 @@ namespace LayoutCustomization
             importConfig.DragDrop += new DragEventHandler(importConfig_DragDrop);
             importConfig.AllowDrop = true;
 
+            Button refreshUI = new Button();
+            refreshUI.Name = "settings_refreshUI";
+            refreshUI.Text = "Refresh UI";
+            refreshUI.Size = new Size(180, 35);
+            refreshUI.Location = new Point(15, resetConfig.Location.Y + 40);
+            refreshUI.Visible = true;
+            refreshUI.MouseDown += new MouseEventHandler(refreshUI_MouseDown);
+            refreshUI.FlatAppearance.BorderSize = 1;
+            refreshUI.FlatAppearance.BorderColor = Color.FromArgb(100, 100, 100);
+            refreshUI.FlatStyle = FlatStyle.Flat;
+            refreshUI.Cursor = Cursors.Hand;
+            refreshUI.AllowDrop = true;
+
             // Control generating
 
             settingsPanel.Controls.Add(tabsBox);
@@ -394,7 +407,9 @@ namespace LayoutCustomization
 
             settingsPanel.Controls.Add(confirmBtn);
             settingsPanel.Controls.Add(openConfig);
+            settingsPanel.Controls.Add(resetConfig);
             settingsPanel.Controls.Add(importConfig);
+            settingsPanel.Controls.Add(refreshUI);
             settingsPanel.Controls.Add(resetConfig);
 
             // After-gen action
@@ -745,6 +760,16 @@ namespace LayoutCustomization
                     MessageBox.Show("We only allow \"layout.json\" configurations, please try again!", this.Text, MessageBoxButtons.OK);
                 }
             }
+        }
+
+        private void refreshUI_MouseDown(object sender, MouseEventArgs e)
+        {
+            System.Windows.Forms.Button refreshUIBtn = (System.Windows.Forms.Button)sender;
+
+            refreshUIBtn.Text = "Reloading ...";
+
+            clearAllPanels();
+            drawLayout();
         }
 
         private void confirmBtn_Click(object sender, EventArgs e)
@@ -1261,6 +1286,25 @@ namespace LayoutCustomization
             }
         }
 
+        public void startVLC(string mediaPath)
+        {
+            try
+            {
+                // Specify the path to the VLC executable (replace with the actual path if necessary)
+                string vlcPath = "vlc";
+
+                // Add any additional arguments, such as media options or flags
+                string arguments = $"\"{mediaPath}\"";
+
+                // Start VLC with the specified media file
+                Process.Start(vlcPath, arguments);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting VLC: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void FindButtonAndPerformOperation(JArray tabsArray, Color borderColor, Button selectedButton, string selectedTrack)
         {
             if (selectedButton.FlatAppearance.BorderColor == borderColor)
@@ -1278,7 +1322,7 @@ namespace LayoutCustomization
                     bool pathExists = File.Exists(fullPath);
                     if (pathExists)
                     {
-                        Process.Start(fullPath);
+                        startVLC(fullPath);
                     }
                 }
             }
