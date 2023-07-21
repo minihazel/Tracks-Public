@@ -1290,13 +1290,9 @@ namespace LayoutCustomization
         {
             try
             {
-                // Specify the path to the VLC executable (replace with the actual path if necessary)
                 string vlcPath = "vlc";
-
-                // Add any additional arguments, such as media options or flags
                 string arguments = $"\"{mediaPath}\"";
 
-                // Start VLC with the specified media file
                 Process.Start(vlcPath, arguments);
             }
             catch (Exception ex)
