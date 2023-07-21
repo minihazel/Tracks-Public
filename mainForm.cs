@@ -64,6 +64,7 @@ namespace LayoutCustomization
             {
                 JObject json = new JObject();
                 json["Tabs"] = new JArray();
+                json["Extensions"] = new JArray();
                 string output = JsonConvert.SerializeObject(json, Formatting.Indented);
                 File.WriteAllText(layoutConfig, output);
 
@@ -1216,10 +1217,14 @@ namespace LayoutCustomization
 
                 foundPanel = panel;
 
-                string[] acceptedExtensions = { ".mp3", ".wav" };
+                string layout_content = File.ReadAllText(layoutConfig);
+                JObject layoutObject = JObject.Parse(layout_content);
+                JArray extensions = (JArray)layoutObject["Extensions"];
+                string[] Extensions = JsonConvert.DeserializeObject<string[]>(extensions.ToString());
+
                 DirectoryInfo pathInfo = new DirectoryInfo(path);
                 FileInfo[] pathFiles = pathInfo.GetFiles()
-                    .Where(file => acceptedExtensions.Contains(file.Extension.ToLower()))
+                    .Where(file => Extensions.Contains(file.Extension.ToLower()))
                     .OrderByDescending(p => p.CreationTimeUtc)
                     .ToArray();
 
@@ -1391,6 +1396,15 @@ namespace LayoutCustomization
 
             }
             */
+        }
+
+        private void mainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.R)
+            {
+                clearAllPanels();
+                drawLayout();
+            }
         }
     }
 }
