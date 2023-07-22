@@ -766,10 +766,7 @@ namespace LayoutCustomization
         {
             System.Windows.Forms.Button refreshUIBtn = (System.Windows.Forms.Button)sender;
 
-            refreshUIBtn.Text = "Reloading ...";
-
-            clearAllPanels();
-            drawLayout();
+            Application.Restart();
         }
 
         private void confirmBtn_Click(object sender, EventArgs e)
