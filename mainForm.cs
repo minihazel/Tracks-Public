@@ -1443,8 +1443,7 @@ namespace LayoutCustomization
         {
             if (e.Control && e.KeyCode == Keys.R)
             {
-                clearAllPanels();
-                drawLayout();
+                Application.Restart();
             }
         }
     }
