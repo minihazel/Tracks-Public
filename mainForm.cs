@@ -1262,8 +1262,8 @@ namespace LayoutCustomization
                     lbl.AutoSize = false;
                     lbl.Anchor = (AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right);
                     lbl.TextAlign = ContentAlignment.MiddleLeft;
-                    lbl.Size = new Size(panel.Size.Width - 4, 25);
-                    lbl.Location = new Point(1, 1 + (index * 25));
+                    lbl.Size = new Size(panel.Size.Width - 4, 35);
+                    lbl.Location = new Point(1, 1 + (index * 35));
                     lbl.Font = new Font("Bahnschrift Light", 10, FontStyle.Regular);
                     lbl.BackColor = listBackcolor;
                     lbl.ForeColor = Color.LightGray;
