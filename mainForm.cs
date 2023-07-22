@@ -1269,6 +1269,7 @@ namespace LayoutCustomization
                     lbl.ForeColor = Color.LightGray;
                     lbl.Margin = new Padding(1, 1, 1, 1);
                     lbl.Cursor = Cursors.Hand;
+                    lbl.AutoEllipsis = true;
                     lbl.MouseEnter += new EventHandler(lbl_MouseEnter);
                     lbl.MouseLeave += new EventHandler(lbl_MouseLeave);
                     lbl.MouseDown += new MouseEventHandler(lbl_MouseDown);
