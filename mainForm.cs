@@ -1101,7 +1101,7 @@ namespace LayoutCustomization
             drawLayout();
         }
 
-        private void deselectTrackPanel(Panel panel)
+        private void deselectTrackPanel(Panel panel, bool isDoubleClick)
         {
             foreach (Control component in panel.Controls)
             {
@@ -1110,6 +1110,9 @@ namespace LayoutCustomization
                     if (lbl.BackColor != listHovercolor)
                     {
                         lbl.BackColor = listBackcolor;
+
+                        if (isDoubleClick)
+                            lbl.ForeColor = Color.LightGray;
                     }
                 }
             }
@@ -1368,7 +1371,7 @@ namespace LayoutCustomization
             if (label.Text != "")
             {
                 Panel parentPanel = label.Parent as Panel;
-                deselectTrackPanel(parentPanel);
+                deselectTrackPanel(parentPanel, false);
 
                 label.BackColor = listSelectedcolor;
             }
@@ -1398,8 +1401,9 @@ namespace LayoutCustomization
                     FindButtonAndPerformOperation(tabsArray, activeColor, associatedBtn, label.Text);
 
                     Panel parentPanel = label.Parent as Panel;
-                    deselectTrackPanel(parentPanel);
+                    deselectTrackPanel(parentPanel, true);
                     label.BackColor = listSelectedcolor;
+                    label.ForeColor = Color.DodgerBlue;
                 }
             }
         }
