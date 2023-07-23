@@ -1370,14 +1370,7 @@ namespace LayoutCustomization
                 Panel parentPanel = label.Parent as Panel;
                 deselectTrackPanel(parentPanel);
 
-                if (label.BackColor == listHovercolor)
-                {
-                    label.BackColor = listSelectedcolor;
-                }
-                else
-                {
-                    label.BackColor = listHovercolor;
-                }
+                label.BackColor = listSelectedcolor;
             }
         }
 
