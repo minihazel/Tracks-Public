@@ -1141,6 +1141,7 @@ namespace LayoutCustomization
 
             if (btn.Text != "")
             {
+
                 foreach (Control otherButton in this.Controls)
                 {
                     if (otherButton is Button otherBtn)
@@ -1364,7 +1365,7 @@ namespace LayoutCustomization
             }
         }
 
-        private void lbl_MouseDown(object sender, EventArgs e)
+        private void lbl_MouseDown(object sender, MouseEventArgs e)
         {
             System.Windows.Forms.Label label = (System.Windows.Forms.Label)sender;
 
@@ -1374,6 +1375,11 @@ namespace LayoutCustomization
                 deselectTrackPanel(parentPanel, false);
 
                 label.BackColor = listSelectedcolor;
+
+                if (e.Button == MouseButtons.Right)
+                {
+
+                }
             }
         }
 
