@@ -65,6 +65,11 @@ namespace LayoutCustomization
                 JObject json = new JObject();
                 json["Tabs"] = new JArray();
                 json["Extensions"] = new JArray();
+
+                JArray extensionsArray = (JArray)json["Extensions"];
+                extensionsArray.Add(".mp3");
+                extensionsArray.Add(".mp4");
+
                 string output = JsonConvert.SerializeObject(json, Formatting.Indented);
                 File.WriteAllText(layoutConfig, output);
 
@@ -832,7 +837,6 @@ namespace LayoutCustomization
                     if (textBarText.Text == "" && textBarPath.Text == "")
                     {
                         MessageBox.Show("Please select an item to edit or remove, or fill out the fields and add a new tab.", this.Text, MessageBoxButtons.OK);
-
                     }
                     else
                     {
@@ -1247,6 +1251,7 @@ namespace LayoutCustomization
                 JObject layoutObject = JObject.Parse(layout_content);
                 JArray extensions = (JArray)layoutObject["Extensions"];
                 string[] Extensions = JsonConvert.DeserializeObject<string[]>(extensions.ToString());
+
 
                 DirectoryInfo pathInfo = new DirectoryInfo(path);
                 FileInfo[] pathFiles = pathInfo.GetFiles()
