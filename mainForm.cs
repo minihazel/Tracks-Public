@@ -27,6 +27,8 @@ namespace LayoutCustomization
         public Color borderColor = Color.FromArgb(255, 100, 100, 100);
         public Color borderColorActive = Color.DodgerBlue;
         public bool isLoaded = false;
+        public bool hasLoaded = false;
+        public string currentTab = "";
 
         List<Label> regLabels = new List<Label>();
         List<Label> v4Labels = new List<Label>();
@@ -217,7 +219,6 @@ namespace LayoutCustomization
                 fillSettingsTab();
             }
 
-            listTracks();
             selectFirstTab();
         }
 
@@ -424,6 +425,17 @@ namespace LayoutCustomization
             {
                 tabsBox.Items.Add(item["Text"]);
             }
+        }
+
+        private string findButtonByColor()
+        {
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Button btn)
+                    if (btn.FlatAppearance.BorderColor == Color.DodgerBlue)
+                        return btn.Text;
+            }
+            return null;
         }
 
         private void tabsBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -1015,8 +1027,8 @@ namespace LayoutCustomization
 
                 if (btn != null)
                 {
-                    btn.FlatAppearance.BorderColor = Color.DodgerBlue;
-                    btn.PerformClick();
+                    // btn.FlatAppearance.BorderColor = Color.DodgerBlue;
+                    // btn.PerformClick();
                 }
             }
             else
@@ -1145,7 +1157,6 @@ namespace LayoutCustomization
 
             if (btn.Text != "")
             {
-
                 foreach (Control otherButton in this.Controls)
                 {
                     if (otherButton is Button otherBtn)
@@ -1161,6 +1172,19 @@ namespace LayoutCustomization
                 {
                     Panel settingsPanel = this.Controls.Find("settings_panel_region", false).FirstOrDefault() as Panel;
                     settingsPanel.BringToFront();
+
+                    string targetBox = "settings_tabsBox";
+                    ComboBox targetComboBox = settingsPanel.Controls.Find(targetBox, true).FirstOrDefault() as ComboBox;
+                    if (targetComboBox != null)
+                    {
+                        string textToFind = currentTab;
+                        int itemIndex = targetComboBox.FindStringExact(textToFind);
+
+                        if (itemIndex != -1)
+                        {
+                            targetComboBox.SelectedIndex = itemIndex;
+                        }
+                    }
                 }
                 else
                 {
@@ -1168,6 +1192,12 @@ namespace LayoutCustomization
                     if (buttonPanelMap.TryGetValue(btn.Name, out Panel targetPanel))
                     {
                         targetPanel.BringToFront();
+                        currentTab = btn.Text;
+
+                        if (!hasLoaded)
+                            listTracks();
+
+                        hasLoaded = true;
                     }
                 }
 
