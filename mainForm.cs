@@ -1330,7 +1330,12 @@ namespace LayoutCustomization
                 string vlcPath = "vlc";
                 string arguments = $"\"{mediaPath}\"";
 
-                Process.Start(vlcPath, arguments);
+                using (Process vlcProcess = new Process())
+                {
+                    vlcProcess.StartInfo.FileName = vlcPath;
+                    vlcProcess.StartInfo.Arguments = arguments;
+                    vlcProcess.Start();
+                }
             }
             catch (Exception ex)
             {
