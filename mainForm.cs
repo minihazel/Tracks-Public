@@ -63,7 +63,10 @@ namespace LayoutCustomization
             {
                 this.Icon = Resources.wave_sound;
                 this.Size = new Size(796, 650);
-                drawLayout();
+
+                bool checkedLayout = checkLayout();
+                if (checkedLayout)
+                    drawLayout();
             }
             else
             {
@@ -83,6 +86,32 @@ namespace LayoutCustomization
             }
 
             b_placeholder.Select();
+        }
+
+        public bool checkLayout()
+        {
+            string layoutContent = File.ReadAllText(layoutConfig);
+            JObject layoutObj = JObject.Parse(layoutContent);
+
+            if (layoutObj["Tabs"] == null)
+            {
+                layoutObj["Tabs"] = new JArray();
+            }
+
+            if (layoutObj["Extensions"] == null)
+            {
+                layoutObj["Extensions"] = new JArray();
+            }
+
+            if (layoutObj["PerformanceMode"] == null)
+            {
+                layoutObj["PerformanceMode"] = false;
+            }
+
+            string updatedJSON = layoutObj.ToString(Formatting.Indented);
+            File.WriteAllText(layoutConfig, updatedJSON);
+
+            return true;
         }
 
         public void drawLayout()
