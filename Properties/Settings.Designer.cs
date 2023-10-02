@@ -22,5 +22,29 @@ namespace Tracks.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string lastUsedTab {
+            get {
+                return ((string)(this["lastUsedTab"]));
+            }
+            set {
+                this["lastUsedTab"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string lastUsedTrack {
+            get {
+                return ((string)(this["lastUsedTrack"]));
+            }
+            set {
+                this["lastUsedTrack"] = value;
+            }
+        }
     }
 }

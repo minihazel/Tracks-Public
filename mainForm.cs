@@ -135,6 +135,17 @@ namespace LayoutCustomization
                 this.Controls.Add(settingsPanel);
 
                 fillSettingsTab();
+
+                if (Settings.Default.lastUsedTab != null && Settings.Default.lastUsedTab != "")
+                {
+                    findMainBox().Text = Settings.Default.lastUsedTab.ToString();
+                    listTracks(Settings.Default.lastUsedTab.ToString());
+                }
+
+                if (Settings.Default.lastUsedTrack != null && Settings.Default.lastUsedTrack != "")
+                {
+                    selectLastUsedTrack();
+                }
             }
             else
             {
@@ -390,6 +401,7 @@ namespace LayoutCustomization
                         if (selectedItem != null)
                         {
                             listTracks(searchString);
+                            checkForUsedTrack(Settings.Default.lastUsedTrack.ToString());
                         }
                     }
                 }
@@ -670,6 +682,49 @@ namespace LayoutCustomization
                 {
                     lbl.Visible = true;
                 }
+            }
+        }
+
+        private void selectLastUsedTrack()
+        {
+            foreach (Control ctrl in findMainPanel().Controls)
+            {
+                if (ctrl is Label lbl)
+                {
+                    if (lbl.Text == Settings.Default.lastUsedTrack.ToString())
+                    {
+                        lbl.ForeColor = Color.DodgerBlue;
+                        lbl.BackColor = listSelectedcolor;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void checkForUsedTrack(string searchString)
+        {
+            foreach (Control ctrl in findMainPanel().Controls)
+            {
+                if (ctrl is Label lbl)
+                {
+                    if (lbl.Text == searchString)
+                    {
+                        lbl.ForeColor = Color.DodgerBlue;
+                        lbl.BackColor = listSelectedcolor;
+
+                        findMainPanel().ScrollControlIntoView(lbl);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void checkLastUsedTrack(string trackName)
+        {
+            if (trackName != null)
+            {
+                Settings.Default.lastUsedTrack = trackName;
+                Settings.Default.Save();
             }
         }
 
@@ -1888,6 +1943,7 @@ namespace LayoutCustomization
                 {
                     JArray tabsArray = readTabs() as JArray;
                     findItemAndPerformOperation(tabsArray, label.Text);
+                    checkLastUsedTrack(label.Text);
                     Panel parentPanel = label.Parent as Panel;
                     deselectTrackPanel(parentPanel, true);
                     label.BackColor = listSelectedcolor;
@@ -1935,6 +1991,9 @@ namespace LayoutCustomization
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Settings.Default.lastUsedTab = findMainBox().SelectedItem.ToString();
+            Settings.Default.Save();
+
             /*
             string content = "Quit or hide in the tray? [Y/N]";
 
