@@ -286,7 +286,6 @@ namespace LayoutCustomization
             this.Controls.Add(mainPanel);
 
             mainPanel.BringToFront();
-
             string layout_content = File.ReadAllText(layoutConfig);
             JObject _layout = JObject.Parse(layout_content);
             JArray _tabs = (JArray)_layout["Tabs"];
@@ -1118,6 +1117,12 @@ namespace LayoutCustomization
 
                             textBarNameTitle.Text = "Tab ID  (used for checking and verification)";
                             textBarName.Enabled = false;
+
+                            bool isPerformanceModeOn = readPerformanceMode();
+                            if (isPerformanceModeOn)
+                                clearAndRefreshMainList();
+                            else
+                                clearAllPanels();
                         }
 
                         else if (confirmBtn.Text.ToLower()
@@ -1142,10 +1147,10 @@ namespace LayoutCustomization
                                     File.WriteAllText(layoutConfig, output);
 
                                     bool isPerformanceModeOn = readPerformanceMode();
-                                    if (!isPerformanceModeOn)
-                                        clearAllPanels();
-                                    else
+                                    if (isPerformanceModeOn)
                                         clearAndRefreshMainList();
+                                    else
+                                        clearAllPanels();
 
                                     textBarText.Clear();
                                     textBarName.Clear();
@@ -1194,10 +1199,10 @@ namespace LayoutCustomization
                                 }
 
                                 bool isPerformanceModeOn = readPerformanceMode();
-                                if (!isPerformanceModeOn)
-                                    clearAllPanels();
-                                else
+                                if (isPerformanceModeOn)
                                     clearAndRefreshMainList();
+                                else
+                                    clearAllPanels();
                             }
                             else
                             {
@@ -1302,7 +1307,25 @@ namespace LayoutCustomization
 
         private void clearAndRefreshMainList()
         {
+            findMainBox().Items.Clear();
+            findMainPanel().Controls.Clear();
 
+            string layout_content = File.ReadAllText(layoutConfig);
+            JObject _layout = JObject.Parse(layout_content);
+            JArray _tabs = (JArray)_layout["Tabs"];
+
+            if (_tabs.Count > 0)
+            {
+                for (int i = 0; i < _tabs.Count; i++)
+                {
+                    JObject property = (JObject)_tabs[i];
+                    string property_text = property["Text"].ToString();
+                    findMainBox().Items.Add(property_text);
+                }
+            }
+
+            findMainPanel().BringToFront();
+            findMainBox().Items.Add("Settings");
         }
 
         private void clearAllPanels()
