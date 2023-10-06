@@ -1382,7 +1382,11 @@ namespace LayoutCustomization
 
                 if (tabSettingsBtn != null)
                 {
-                    tabSettingsBtn.PerformClick();
+                    if (tabSettingsBtn.InvokeRequired)
+                        tabSettingsBtn.Invoke(new Action(() => tabSettingsBtn.PerformClick()));
+                    else
+                        tabSettingsBtn.PerformClick();
+
                     tabSettingsBtn.FlatAppearance.BorderColor = Color.DodgerBlue;
                     tabSettingsBtn.ForeColor = Color.DodgerBlue;
                 }
@@ -1991,7 +1995,11 @@ namespace LayoutCustomization
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Settings.Default.lastUsedTab = findMainBox().SelectedItem.ToString();
+            ComboBox mainBox = findMainBox();
+
+            if (mainBox != null)
+                Settings.Default.lastUsedTab = findMainBox().SelectedItem.ToString();
+
             Settings.Default.Save();
 
             /*
