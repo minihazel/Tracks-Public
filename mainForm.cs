@@ -69,23 +69,27 @@ namespace LayoutCustomization
                     drawLayout();
             }
             else
-            {
-                JObject json = new JObject();
-                json["Tabs"] = new JArray();
-                json["Extensions"] = new JArray();
-                json["PerformanceMode"] = false;
-
-                JArray extensionsArray = (JArray)json["Extensions"];
-                extensionsArray.Add(".mp3");
-                extensionsArray.Add(".mp4");
-
-                string output = JsonConvert.SerializeObject(json, Formatting.Indented);
-                File.WriteAllText(layoutConfig, output);
-
-                Application.Restart();
-            }
+                generateConfig();
 
             b_placeholder.Select();
+        }
+
+        public void generateConfig()
+        {
+            JObject json = new JObject();
+            json["Tabs"] = new JArray();
+            json["Extensions"] = new JArray();
+            json["PerformanceMode"] = false;
+
+            JArray extensionsArray = (JArray)json["Extensions"];
+            extensionsArray.Add(".mp3");
+            extensionsArray.Add(".mp4");
+            extensionsArray.Add(".wav");
+
+            string output = JsonConvert.SerializeObject(json, Formatting.Indented);
+            File.WriteAllText(layoutConfig, output);
+
+            Application.Restart();
         }
 
         public bool checkLayout()
@@ -1998,7 +2002,10 @@ namespace LayoutCustomization
             ComboBox mainBox = findMainBox();
 
             if (mainBox != null)
-                Settings.Default.lastUsedTab = findMainBox().SelectedItem.ToString();
+            {
+                if (findMainBox().SelectedItem != null)
+                    Settings.Default.lastUsedTab = findMainBox().SelectedItem.ToString();
+            }
 
             Settings.Default.Save();
 

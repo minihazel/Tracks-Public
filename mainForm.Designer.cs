@@ -48,7 +48,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(28)))), ((int)(((byte)(28)))));
-            this.ClientSize = new System.Drawing.Size(780, 576);
+            this.ClientSize = new System.Drawing.Size(484, 576);
             this.Controls.Add(this.b_placeholder);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Bahnschrift Light", 10F);
